@@ -913,61 +913,121 @@ No markdown, no explanation outside the JSON.`;
       { icon: "⚙️", title: "Pipeline Strategy", detail: `ColumnTransformer with separate numeric/categorical sub-pipelines. ${csvData.sampled ? "Dataset was sampled — consider full training with incremental learning." : "Full dataset loaded — no sampling needed."}`, severity: "info" },
     ]);
 
-    // STEP 4
-    setPipelineStep(4); setLoadingMsg(`Benchmarking ${modelList.length} models with stratified 5-fold CV...`);
-    const cvPrompt = `Simulate sklearn cross_val_score results, cv=5, scoring="${isRegLocal ? "r2" : "accuracy"}", task="${taskType}".
+    // STEP 4, 5, 6 — REAL BACKEND TRAINING
+    setPipelineStep(4); setLoadingMsg("Sending data to backend for real sklearn training...");
+
+    const BACKEND = "https://aman12213-modelforge-backend.hf.space";
+
+    let backendSuccess = false;
+    try {
+      // Build FormData with CSV blob
+      const csvContent = [csvData.headers.join(","),
+        ...csvData.rows.map(r => r.map(v => v.includes?.(",") ? `"${v}"` : v).join(","))
+      ].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const formData = new FormData();
+      formData.append("file", blob, csvData.filename || "data.csv");
+      formData.append("target", targetCol);
+
+      setLoadingMsg("Real CV benchmark running — LGBM, XGBoost, RF training...");
+      const res = await fetch(`${BACKEND}/analyze`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error(`Backend ${res.status}`);
+      const result = await res.json();
+
+      setPipelineStep(5); setLoadingMsg("GridSearchCV tuning top 2 models...");
+      await new Promise(r => setTimeout(r, 300));
+
+      // Map backend results to frontend format
+      const models = (result.cv_results || []).map(m => {
+        const cat = modelList.find(c => c.name === m.name);
+        return {
+          ...m,
+          tag: cat?.tag || "tree",
+          note: cat?.note || "",
+          scaling_needed: !TREE_MODELS.has(m.name),
+        };
+      });
+      setModelResults(models);
+
+      const tuned = result.tuned_results || [];
+      setTunedResults(tuned);
+
+      const best = tuned[0] ? {
+        ...tuned[0],
+        isTree: TREE_MODELS.has(tuned[0].name),
+      } : null;
+      setBestModel(best);
+
+      setPipelineStep(6); setLoadingMsg("Extracting real feature importance...");
+      await new Promise(r => setTimeout(r, 200));
+
+      setFeatureImp(result.feature_importance || []);
+
+      // Store test metrics for display
+      if (result.test_metrics) {
+        window._testMetrics = result.test_metrics;
+      }
+
+      backendSuccess = true;
+
+    } catch (err) {
+      console.warn("Backend failed, falling back to AI simulation:", err);
+      // FALLBACK — Claude simulation
+      setPipelineStep(4); setLoadingMsg(`Benchmarking ${modelList.length} models (AI simulation)...`);
+      const cvPrompt = `Simulate sklearn cross_val_score results, cv=5, scoring="${isRegLocal ? "r2" : "accuracy"}", task="${taskType}".
 Dataset: ${nRows.toLocaleString()} rows, ${nFeats} features.
 Rules: LGBM/XGB should rank #1-2. Tree models > linear. Realistic cv_std 0.008-0.030. No model above 0.99 or below 0.50.
 For regression: R² values 0.75-0.95 range. For classification: accuracy 0.78-0.96 range.
 Return ONLY valid JSON array: [{"name":"ModelName","cv_mean":0.XXXX,"cv_std":0.XXXX,"scaling_needed":bool,"note":"short insight"}]
 Models: ${modelList.map(m => m.name).join(",")}`;
 
-    const cvRaw = await callClaude(cvPrompt);
-    let models = parseJSON(cvRaw);
-    if (!Array.isArray(models) || models.length < 5) models = genFallbackModels(modelList, taskType, nRows, nFeats);
-    // Merge with catalogue metadata
-    models = models.map(m => {
-      const cat = modelList.find(c => c.name === m.name);
-      return { ...m, tag: cat?.tag || "unknown", note: m.note || cat?.note || "" };
-    });
-    models.sort((a, b) => b.cv_mean - a.cv_mean);
-    setModelResults(models);
+      const cvRaw = await callClaude(cvPrompt);
+      let models = parseJSON(cvRaw);
+      if (!Array.isArray(models) || models.length < 5) models = genFallbackModels(modelList, taskType, nRows, nFeats);
+      models = models.map(m => {
+        const cat = modelList.find(c => c.name === m.name);
+        return { ...m, tag: cat?.tag || "unknown", note: m.note || cat?.note || "" };
+      });
+      models.sort((a, b) => b.cv_mean - a.cv_mean);
+      setModelResults(models);
 
-    // STEP 5
-    setPipelineStep(5); setLoadingMsg("Running GridSearchCV on top 2 models...");
-    const top2 = models.slice(0, 2).map(m => m.name);
-    const tunePrompt = `Simulate GridSearchCV cv=5 scoring="${isRegLocal ? "r2" : "accuracy"}" for these models: ${top2.join(",")}.
+      setPipelineStep(5); setLoadingMsg("Running GridSearchCV on top 2 models...");
+      const top2Names = models.slice(0, 2).map(m => m.name);
+      const tunePrompt = `Simulate GridSearchCV cv=5 scoring="${isRegLocal ? "r2" : "accuracy"}" for these models: ${top2Names.join(",")}.
 Task: ${taskType}. Dataset: ${nRows.toLocaleString()} rows.
 Realistic tuning gain: +0.005 to +0.025. Tuned > base always.
 Return ONLY JSON: [{"name":"ModelName","base_score":0.XXXX,"tuned_score":0.XXXX,"best_params":{"param":"val"},"improvement":0.XXXX,"cv_folds":5,"total_fits":int}]`;
+      const tuneRaw = await callClaude(tunePrompt);
+      let tuned = parseJSON(tuneRaw);
+      if (!Array.isArray(tuned) || !tuned.length) tuned = genFallbackTuning(top2Names, models, taskType);
+      setTunedResults(tuned);
+      const best = tuned[0] ? { ...tuned[0], isTree: TREE_MODELS.has(tuned[0].name) } : null;
+      setBestModel(best);
 
-    const tuneRaw = await callClaude(tunePrompt);
-    let tuned = parseJSON(tuneRaw);
-    if (!Array.isArray(tuned) || !tuned.length) tuned = genFallbackTuning(top2, models, taskType);
-    setTunedResults(tuned);
-    const best = tuned[0] ? { ...tuned[0], isTree: TREE_MODELS.has(tuned[0].name) } : null;
-    setBestModel(best);
-
-    // STEP 6
-    setPipelineStep(6); setLoadingMsg("Computing SHAP-proxy feature importance...");
-    const featCols = stats.filter(s => s.name !== targetCol && !dropCols.includes(s.name));
-    const featPrompt = `Simulate feature_importances_ for ${best?.name || models[0]?.name} on ${taskType} task.
-Features: ${featCols.map(s => s.name + "(" + s.type + ")").join(",")}.
+      setPipelineStep(6); setLoadingMsg("Computing SHAP-proxy feature importance...");
+      const featCols2 = stats.filter(s => s.name !== targetCol && !dropCols.includes(s.name));
+      const featPrompt = `Simulate feature_importances_ for ${best?.name || models[0]?.name} on ${taskType} task.
+Features: ${featCols2.map(s => s.name + "(" + s.type + ")").join(",")}.
 Target: ${targetCol}.
-Rules: numeric features generally more important. Include diversity — don't make one feature dominate >40%. Realistic values.
 Return ONLY JSON array sorted desc: [{"feature":"name","importance":0.XXX,"type":"numeric|categorical"}]`;
-
-    const featRaw = await callClaude(featPrompt);
-    let feats = parseJSON(featRaw);
-    if (!Array.isArray(feats) || !feats.length) {
-      const total = featCols.reduce((a, _, j) => a + 1 / (j + 1), 0);
-      feats = featCols.slice(0, 15).map((s, i) => ({
-        feature: s.name,
-        importance: +((1 / (i + 1)) / total).toFixed(3),
-        type: s.type,
-      }));
+      const featRaw = await callClaude(featPrompt);
+      let feats = parseJSON(featRaw);
+      if (!Array.isArray(feats) || !feats.length) {
+        const total = featCols2.reduce((a, _, j) => a + 1 / (j + 1), 0);
+        feats = featCols2.slice(0, 15).map((s, i) => ({
+          feature: s.name, importance: +((1 / (i + 1)) / total).toFixed(3), type: s.type,
+        }));
+      }
+      setFeatureImp(feats.slice(0, 15));
     }
-    setFeatureImp(feats.slice(0, 15));
+
+    const top2 = (tunedResults || []).slice(0, 2).map(m => m.name);
+    const tuned = tunedResults || [];
+    const best = bestModel || tunedResults?.[0] || null;
 
     // STEP 7
     setPipelineStep(7); setLoadingMsg("Generating executive report...");
