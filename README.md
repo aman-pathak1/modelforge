@@ -9,7 +9,7 @@
 
 > Drop a CSV. Get a production-ready ML pipeline in minutes.
 
-**Live Demo** → https://modelforge-g5nw.vercel.app
+**Live Demo** → (https://modelforge-or5c.vercel.app/)
 **Backend API** → https://aman12213-modelforge-backend.hf.space/health
 
 ---
