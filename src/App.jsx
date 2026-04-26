@@ -5,37 +5,37 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineCh
 // DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════
 const T = {
-  bg: "#050508",
-  surface: "#0a0a10",
-  card: "#0f0f18",
-  cardHover: "#13131e",
-  border: "#1c1c2e",
-  borderMid: "#252540",
-  borderHigh: "#32325a",
+  bg:          "#050508",
+  surface:     "#0a0a10",
+  card:        "#0f0f18",
+  cardHover:   "#13131e",
+  border:      "#1c1c2e",
+  borderMid:   "#252540",
+  borderHigh:  "#32325a",
 
-  cyan: "#00e5ff",
-  cyanDim: "#00e5ff12",
-  cyanGlow: "#00e5ff25",
-  green: "#00c896",
-  greenDim: "#00c89612",
-  amber: "#ffb627",
-  amberDim: "#ffb62712",
-  red: "#ff4757",
-  redDim: "#ff475712",
-  purple: "#9b6dff",
-  purpleDim: "#9b6dff12",
-  pink: "#ff5fa0",
+  cyan:        "#00e5ff",
+  cyanDim:     "#00e5ff12",
+  cyanGlow:    "#00e5ff25",
+  green:       "#00c896",
+  greenDim:    "#00c89612",
+  amber:       "#ffb627",
+  amberDim:    "#ffb62712",
+  red:         "#ff4757",
+  redDim:      "#ff475712",
+  purple:      "#9b6dff",
+  purpleDim:   "#9b6dff12",
+  pink:        "#ff5fa0",
 
-  text: "#f0f0fa",
-  textSoft: "#9090b8",
-  textMuted: "#55557a",
+  text:        "#f0f0fa",
+  textSoft:    "#9090b8",
+  textMuted:   "#55557a",
 
   fontDisplay: "'Space Grotesk', system-ui, sans-serif",
-  fontMono: "'JetBrains Mono', 'Fira Code', monospace",
-  fontBody: "'DM Sans', system-ui, sans-serif",
+  fontMono:    "'JetBrains Mono', 'Fira Code', monospace",
+  fontBody:    "'DM Sans', system-ui, sans-serif",
 };
 
-const PALETTE = [T.cyan, T.green, T.amber, T.purple, T.pink, T.red, "#7ee8fa", "#80ff72", "#f8d800", "#ff9a3c"];
+const PALETTE = [T.cyan, T.green, T.amber, T.purple, T.pink, T.red, "#7ee8fa","#80ff72","#f8d800","#ff9a3c"];
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL CSS
@@ -75,9 +75,9 @@ const CSS = `
 // ═══════════════════════════════════════════════════════════════════
 // CHUNKED CSV PARSER — handles large files with sampling
 // ═══════════════════════════════════════════════════════════════════
-const MAX_ROWS_FULL = 100_000;   // full parse up to 100k rows
-const MAX_ROWS_SAMPLE = 500_000;   // sample above 100k, up to 500k
-const SAMPLE_SIZE = 50_000;    // stratified sample target
+const MAX_ROWS_FULL    = 100_000;   // full parse up to 100k rows
+const MAX_ROWS_SAMPLE  = 500_000;   // sample above 100k, up to 500k
+const SAMPLE_SIZE      = 50_000;    // stratified sample target
 
 function parseCSV(text, onProgress) {
   const lines = text.split(/\r?\n/).filter(l => l.trim());
@@ -241,7 +241,7 @@ function computeStats(headers, rows, types) {
       }, 0);
       const encodingStrategy = unique <= 8 ? "OneHotEncoder"
         : unique <= 50 ? "OrdinalEncoder + TargetEncoder"
-          : "FrequencyEncoder";
+        : "FrequencyEncoder";
       return {
         name: h, type: "categorical", count: nonEmpty.length,
         missing, missingPct, unique,
@@ -251,7 +251,7 @@ function computeStats(headers, rows, types) {
         encodingStrategy,
         imputeStrategy: "most_frequent",
         isHighCard: unique > 50,
-        isLeaky: ["id", "_id", "uuid", "key", "hash"].some(kw => h.toLowerCase().includes(kw)),
+        isLeaky: ["id","_id","uuid","key","hash"].some(kw => h.toLowerCase().includes(kw)),
       };
     }
 
@@ -327,48 +327,48 @@ function analyzeTarget(headers, rows, targetCol) {
 // MODEL CATALOGUE — sklearn-aligned
 // ═══════════════════════════════════════════════════════════════════
 const CLASSIFIERS = [
-  { name: "LGBMClassifier", tag: "tree", note: "Fast gradient boosting, handles missing natively" },
-  { name: "XGBClassifier", tag: "tree", note: "Regularized gradient boosting, robust to noise" },
-  { name: "RandomForestClassifier", tag: "tree", note: "Bagging ensemble, low variance" },
-  { name: "GradientBoostingClassifier", tag: "tree", note: "High accuracy, slower training" },
-  { name: "ExtraTreesClassifier", tag: "tree", note: "Extra randomness, fast training" },
-  { name: "LogisticRegression", tag: "linear", note: "Interpretable baseline, needs scaling" },
-  { name: "SVC", tag: "kernel", note: "Effective in high-dim spaces" },
-  { name: "KNeighborsClassifier", tag: "lazy", note: "Non-parametric, sensitive to scale" },
-  { name: "DecisionTreeClassifier", tag: "tree", note: "Interpretable, prone to overfit" },
-  { name: "GaussianNB", tag: "prob", note: "Probabilistic, strong naive assumption" },
+  { name: "LGBMClassifier",             tag: "tree",   note: "Fast gradient boosting, handles missing natively" },
+  { name: "XGBClassifier",              tag: "tree",   note: "Regularized gradient boosting, robust to noise" },
+  { name: "RandomForestClassifier",     tag: "tree",   note: "Bagging ensemble, low variance" },
+  { name: "GradientBoostingClassifier", tag: "tree",   note: "High accuracy, slower training" },
+  { name: "ExtraTreesClassifier",       tag: "tree",   note: "Extra randomness, fast training" },
+  { name: "LogisticRegression",         tag: "linear", note: "Interpretable baseline, needs scaling" },
+  { name: "SVC",                        tag: "kernel", note: "Effective in high-dim spaces" },
+  { name: "KNeighborsClassifier",       tag: "lazy",   note: "Non-parametric, sensitive to scale" },
+  { name: "DecisionTreeClassifier",     tag: "tree",   note: "Interpretable, prone to overfit" },
+  { name: "GaussianNB",                 tag: "prob",   note: "Probabilistic, strong naive assumption" },
 ];
 
 const REGRESSORS = [
-  { name: "LGBMRegressor", tag: "tree", note: "Best overall, handles mixed types well" },
-  { name: "XGBRegressor", tag: "tree", note: "Regularized boosting, excellent baseline" },
-  { name: "RandomForestRegressor", tag: "tree", note: "Ensemble of trees, robust predictions" },
-  { name: "GradientBoostingRegressor", tag: "tree", note: "Sequential boosting, high accuracy" },
-  { name: "ExtraTreesRegressor", tag: "tree", note: "Extra randomness reduces variance" },
-  { name: "Ridge", tag: "linear", note: "L2 regularized, great baseline" },
-  { name: "Lasso", tag: "linear", note: "L1 regularized, implicit feature selection" },
-  { name: "ElasticNet", tag: "linear", note: "L1+L2 combined, balanced regularization" },
-  { name: "SVR", tag: "kernel", note: "Kernel-based, effective in high-dim" },
-  { name: "DecisionTreeRegressor", tag: "tree", note: "Interpretable, high variance" },
+  { name: "LGBMRegressor",             tag: "tree",   note: "Best overall, handles mixed types well" },
+  { name: "XGBRegressor",              tag: "tree",   note: "Regularized boosting, excellent baseline" },
+  { name: "RandomForestRegressor",     tag: "tree",   note: "Ensemble of trees, robust predictions" },
+  { name: "GradientBoostingRegressor", tag: "tree",   note: "Sequential boosting, high accuracy" },
+  { name: "ExtraTreesRegressor",       tag: "tree",   note: "Extra randomness reduces variance" },
+  { name: "Ridge",                     tag: "linear", note: "L2 regularized, great baseline" },
+  { name: "Lasso",                     tag: "linear", note: "L1 regularized, implicit feature selection" },
+  { name: "ElasticNet",                tag: "linear", note: "L1+L2 combined, balanced regularization" },
+  { name: "SVR",                       tag: "kernel", note: "Kernel-based, effective in high-dim" },
+  { name: "DecisionTreeRegressor",     tag: "tree",   note: "Interpretable, high variance" },
 ];
 
 const TREE_MODELS = new Set([
-  "LGBMClassifier", "XGBClassifier", "RandomForestClassifier", "GradientBoostingClassifier",
-  "ExtraTreesClassifier", "DecisionTreeClassifier", "LGBMRegressor", "XGBRegressor",
-  "RandomForestRegressor", "GradientBoostingRegressor", "ExtraTreesRegressor", "DecisionTreeRegressor"
+  "LGBMClassifier","XGBClassifier","RandomForestClassifier","GradientBoostingClassifier",
+  "ExtraTreesClassifier","DecisionTreeClassifier","LGBMRegressor","XGBRegressor",
+  "RandomForestRegressor","GradientBoostingRegressor","ExtraTreesRegressor","DecisionTreeRegressor"
 ]);
 
 const HYPERPARAM_GRIDS = {
-  LGBMClassifier: { num_leaves: [31, 63, 127], learning_rate: [0.05, 0.1], n_estimators: [100, 300], min_child_samples: [20, 50] },
-  XGBClassifier: { max_depth: [4, 6, 8], learning_rate: [0.05, 0.1, 0.2], n_estimators: [100, 300], subsample: [0.8, 1.0] },
-  RandomForestClassifier: { n_estimators: [100, 300], max_depth: [null, 10, 20], min_samples_split: [2, 5], max_features: ["sqrt", "log2"] },
-  GradientBoostingClassifier: { n_estimators: [100, 200], learning_rate: [0.05, 0.1], max_depth: [3, 5], subsample: [0.8, 1.0] },
-  LogisticRegression: { C: [0.01, 0.1, 1, 10], solver: ["lbfgs", "liblinear"], penalty: ["l2"] },
-  SVC: { C: [0.1, 1, 10], kernel: ["rbf", "poly"], gamma: ["scale", "auto"] },
-  LGBMRegressor: { num_leaves: [31, 63, 127], learning_rate: [0.05, 0.1], n_estimators: [100, 300] },
-  XGBRegressor: { max_depth: [4, 6, 8], learning_rate: [0.05, 0.1, 0.2], n_estimators: [100, 300] },
-  RandomForestRegressor: { n_estimators: [100, 300], max_depth: [null, 10, 20], max_features: ["sqrt", "log2"] },
-  Ridge: { alpha: [0.1, 1.0, 10.0, 100.0] },
+  LGBMClassifier:             { num_leaves: [31,63,127], learning_rate: [0.05,0.1], n_estimators: [100,300], min_child_samples: [20,50] },
+  XGBClassifier:              { max_depth: [4,6,8], learning_rate: [0.05,0.1,0.2], n_estimators: [100,300], subsample: [0.8,1.0] },
+  RandomForestClassifier:     { n_estimators: [100,300], max_depth: [null,10,20], min_samples_split: [2,5], max_features: ["sqrt","log2"] },
+  GradientBoostingClassifier: { n_estimators: [100,200], learning_rate: [0.05,0.1], max_depth: [3,5], subsample: [0.8,1.0] },
+  LogisticRegression:         { C: [0.01,0.1,1,10], solver: ["lbfgs","liblinear"], penalty: ["l2"] },
+  SVC:                        { C: [0.1,1,10], kernel: ["rbf","poly"], gamma: ["scale","auto"] },
+  LGBMRegressor:              { num_leaves: [31,63,127], learning_rate: [0.05,0.1], n_estimators: [100,300] },
+  XGBRegressor:               { max_depth: [4,6,8], learning_rate: [0.05,0.1,0.2], n_estimators: [100,300] },
+  RandomForestRegressor:      { n_estimators: [100,300], max_depth: [null,10,20], max_features: ["sqrt","log2"] },
+  Ridge:                      { alpha: [0.1,1.0,10.0,100.0] },
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -411,7 +411,7 @@ function parseJSON(raw) {
     return JSON.parse(raw.replace(/```json\n?|```\n?/g, "").trim());
   } catch {
     const m = raw.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
-    if (m) try { return JSON.parse(m[0]); } catch { }
+    if (m) try { return JSON.parse(m[0]); } catch {}
   }
   return null;
 }
@@ -434,12 +434,10 @@ function genFallbackModels(list, taskType, nRows, nFeats) {
     const rowBonus = Math.min(nRows / 200000, 1) * 0.03;
     const featFactor = nFeats > 50 ? 0.98 : 1.0;
     const jitter = (Math.random() - 0.5) * 0.015;
-    let finalBase = ((base + rowBonus) * featFactor + jitter);
-    finalBase = Math.min(0.985, Math.max(0.5, finalBase)); // Cap to realistic bounds
     return {
       name: m.name, tag: m.tag, note: m.note,
-      cv_mean: +finalBase.toFixed(4),
-      cv_std: +(0.008 + Math.random() * 0.018).toFixed(4),
+      cv_mean: +Math.max(0.5, ((base + rowBonus) * featFactor + jitter)).toFixed(4),
+      cv_std:  +(0.008 + Math.random() * 0.018).toFixed(4),
       train_time_est: TREE_MODELS.has(m.name) ? "~fast" : "~medium",
       scaling_needed: !TREE_MODELS.has(m.name),
     };
@@ -456,10 +454,7 @@ function genFallbackTuning(top2, models, taskType) {
     Object.entries(grid).forEach(([k, v]) => {
       bestParams[k] = v[Math.floor(Math.random() * v.length)];
     });
-    let raw_tuned = base + delta;
-    if (raw_tuned >= 0.999) raw_tuned = 0.992 + Math.random() * 0.005; // Cap tuned score
-
-    return { name, base_score: base, tuned_score: +raw_tuned.toFixed(4), improvement: +(raw_tuned - base).toFixed(4), best_params: bestParams };
+    return { name, base_score: base, tuned_score: +(base + delta).toFixed(4), improvement: +delta.toFixed(4), best_params: bestParams };
   });
 }
 
@@ -578,8 +573,8 @@ print(f"Train: {X_train.shape}, Test: {X_test.shape}")
 # ─── 7. CROSS-VALIDATION BENCHMARK ───────────────────────────────
 models = {
 ${(isReg ? REGRESSORS : CLASSIFIERS).map(m =>
-    `    "${m.name}": ${m.name}(random_state=42${m.tag === 'lazy' || m.name === 'GaussianNB' ? '),' : ', n_jobs=-1),'}`
-  ).join('\n')}
+  `    "${m.name}": ${m.name}(random_state=42${m.tag === 'lazy' || m.name === 'GaussianNB' ? '),' : ', n_jobs=-1),'}`
+).join('\n')}
 }
 
 cv = ${!isReg ? "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)" : "KFold(n_splits=5, shuffle=True, random_state=42)"}
@@ -599,12 +594,12 @@ print(f"\\nTop 2: {top2}")
 
 # ─── 8. HYPERPARAMETER TUNING (GridSearchCV) ──────────────────────
 param_grids = ${JSON.stringify(
-    Object.fromEntries(
-      Object.entries(HYPERPARAM_GRIDS)
-        .filter(([k]) => (isReg ? REGRESSORS : CLASSIFIERS).find(m => m.name === k))
-        .map(([k, v]) => [k, Object.fromEntries(Object.entries(v).map(([pk, pv]) => [`model__${pk}`, pv]))])
-    ), null, 4
-  )}
+  Object.fromEntries(
+    Object.entries(HYPERPARAM_GRIDS)
+      .filter(([k]) => (isReg ? REGRESSORS : CLASSIFIERS).find(m => m.name === k))
+      .map(([k, v]) => [k, Object.fromEntries(Object.entries(v).map(([pk, pv]) => [`model__${pk}`, pv]))])
+  ), null, 4
+)}
 
 best_estimators = {}
 for model_name in top2:
@@ -626,7 +621,7 @@ ${isReg ? `rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 mae  = mean_absolute_error(y_test, y_pred)
 r2   = r2_score(y_test, y_pred)
 print(f"Test R² = {r2:.4f} | RMSE = {rmse:.4f} | MAE = {mae:.4f}")` :
-      `print(classification_report(y_test, y_pred, target_names=le.classes_.astype(str)))
+`print(classification_report(y_test, y_pred, target_names=le.classes_.astype(str)))
 print(f"Confusion Matrix:\\n{confusion_matrix(y_test, y_pred)}")`}
 
 # ─── 10. FEATURE IMPORTANCE ───────────────────────────────────────
@@ -654,7 +649,7 @@ with mlflow.start_run(run_name="${topModel}_final"):
 ${isReg ? `    mlflow.log_metric("test_r2",   r2)
     mlflow.log_metric("test_rmse", rmse)
     mlflow.log_metric("test_mae",  mae)` :
-      `    # mlflow.log_metric("test_accuracy", accuracy_score(y_test, y_pred))`}
+`    # mlflow.log_metric("test_accuracy", accuracy_score(y_test, y_pred))`}
     mlflow.sklearn.log_model(final_model, "model")
     print("MLflow run logged.")
 
@@ -775,52 +770,51 @@ function PipelineStep({ step, label, active }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════════
 const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "eda", label: "EDA" },
-  { id: "quality", label: "Data Quality" },
-  { id: "cleaning", label: "🧹 Clean Data" },
-  { id: "models", label: "CV Benchmark" },
-  { id: "tuning", label: "Hypertuning" },
-  { id: "features", label: "Feature Imp." },
-  { id: "predict", label: "⚡ Live Predict" },
-  { id: "code", label: "Python Code" },
-  { id: "report", label: "Report" },
+  { id: "overview",    label: "Overview" },
+  { id: "eda",         label: "EDA" },
+  { id: "quality",     label: "Data Quality" },
+  { id: "cleaning",    label: "🧹 Clean Data" },
+  { id: "models",      label: "CV Benchmark" },
+  { id: "tuning",      label: "Hypertuning" },
+  { id: "features",    label: "Feature Imp." },
+  { id: "predict",     label: "⚡ Live Predict" },
+  { id: "code",        label: "Python Code" },
+  { id: "report",      label: "Report" },
 ];
 
-const PIPELINE_STEPS = ["Ingest", "Quality Check", "EDA + Stats", "CV Benchmark", "GridSearchCV", "Feature Imp.", "Report Gen."];
+const PIPELINE_STEPS = ["Ingest","Quality Check","EDA + Stats","CV Benchmark","GridSearchCV","Feature Imp.","Report Gen."];
 
 export default function ModelForge() {
-  const [stage, setStage] = useState("upload");
-  const [csvData, setCsvData] = useState(null);
-  const [stats, setStats] = useState([]);
-  const [correlations, setCorrelations] = useState({ cols: [], matrix: [] });
+  const [stage, setStage]                 = useState("upload");
+  const [csvData, setCsvData]             = useState(null);
+  const [stats, setStats]                 = useState([]);
+  const [correlations, setCorrelations]   = useState({ cols: [], matrix: [] });
   const [qualityIssues, setQualityIssues] = useState([]);
-  const [targetCol, setTargetCol] = useState("");
-  const [targetInfo, setTargetInfo] = useState(null);
-  const [dropCols, setDropCols] = useState([]);
-  const [edaInsights, setEdaInsights] = useState([]);
-  const [modelResults, setModelResults] = useState([]);
-  const [tunedResults, setTunedResults] = useState([]);
-  const [bestModel, setBestModel] = useState(null);
-  const [featureImp, setFeatureImp] = useState([]);
-  const [fullReport, setFullReport] = useState("");
-  const [pythonCode, setPythonCode] = useState("");
-  const [pipelineCfg, setPipelineCfg] = useState(null);
-  const [loadingMsg, setLoadingMsg] = useState("");
-  const [pipelineStep, setPipelineStep] = useState(0);
-  const [dragOver, setDragOver] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [targetCol, setTargetCol]         = useState("");
+  const [targetInfo, setTargetInfo]       = useState(null);
+  const [dropCols, setDropCols]           = useState([]);
+  const [edaInsights, setEdaInsights]     = useState([]);
+  const [modelResults, setModelResults]   = useState([]);
+  const [tunedResults, setTunedResults]   = useState([]);
+  const [bestModel, setBestModel]         = useState(null);
+  const [featureImp, setFeatureImp]       = useState([]);
+  const [fullReport, setFullReport]       = useState("");
+  const [pythonCode, setPythonCode]       = useState("");
+  const [pipelineCfg, setPipelineCfg]     = useState(null);
+  const [loadingMsg, setLoadingMsg]       = useState("");
+  const [pipelineStep, setPipelineStep]   = useState(0);
+  const [dragOver, setDragOver]           = useState(false);
+  const [activeTab, setActiveTab]         = useState("overview");
   const [parseProgress, setParseProgress] = useState(0);
-  const [fileSizeMB, setFileSizeMB] = useState(0);
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [fileSizeMB, setFileSizeMB]       = useState(0);
+  const [copySuccess, setCopySuccess]     = useState(false);
   // ── NEW FEATURE STATES ──────────────────────────────────────────
-  const [healthScore, setHealthScore] = useState(null);
-  const [cleanedRows, setCleanedRows] = useState(null);
-  const [cleanOps, setCleanOps] = useState({});
-  const [predInputs, setPredInputs] = useState({});
-  const [predResult, setPredResult] = useState(null);
-  const [predLoading, setPredLoading] = useState(false);
-  const [modelDownloading, setModelDownloading] = useState(false);
+  const [healthScore, setHealthScore]     = useState(null);
+  const [cleanedRows, setCleanedRows]     = useState(null);
+  const [cleanOps, setCleanOps]           = useState({});
+  const [predInputs, setPredInputs]       = useState({});
+  const [predResult, setPredResult]       = useState(null);
+  const [predLoading, setPredLoading]     = useState(false);
   const fileRef = useRef();
 
   const isReg = targetInfo?.taskType === "regression";
@@ -886,10 +880,10 @@ export default function ModelForge() {
 
     // STEP 3
     setPipelineStep(3); setLoadingMsg("Performing EDA and generating insights...");
-    const highMissing = stats.filter(s => parseFloat(s.missingPct) > 10);
-    const highSkew = numCols.filter(s => Math.abs(s.skew) > 1);
-    const highOutlier = numCols.filter(s => s.outlierPct > 10);
-    const corrTop = correlations.cols.length ? [] : [];
+    const highMissing   = stats.filter(s => parseFloat(s.missingPct) > 10);
+    const highSkew      = numCols.filter(s => Math.abs(s.skew) > 1);
+    const highOutlier   = numCols.filter(s => s.outlierPct > 10);
+    const corrTop       = correlations.cols.length ? [] : [];
 
     const edaPrompt = `You are a senior ML engineer. Analyze this dataset and give exactly 8 sharp, actionable EDA findings.
 
@@ -898,10 +892,10 @@ Shape: ${csvData.totalLines.toLocaleString()} rows × ${csvData.headers.length} 
 Task: ${taskType} | Target: ${targetCol}
 Imbalance ratio: ${targetInfo?.imbalanceRatio}x
 
-Numeric columns (${numCols.length}): ${numCols.slice(0, 8).map(s => `${s.name}(sk=${s.skew},out=${s.outlierPct}%,miss=${s.missingPct}%,normal=${s.isNormal})`).join(", ")}
-Categorical (${catCols.length}): ${catCols.slice(0, 6).map(s => `${s.name}(u=${s.unique},ent=${s.entropy})`).join(", ")}
+Numeric columns (${numCols.length}): ${numCols.slice(0,8).map(s => `${s.name}(sk=${s.skew},out=${s.outlierPct}%,miss=${s.missingPct}%,normal=${s.isNormal})`).join(", ")}
+Categorical (${catCols.length}): ${catCols.slice(0,6).map(s => `${s.name}(u=${s.unique},ent=${s.entropy})`).join(", ")}
 High missing: ${highMissing.map(s => s.name + " " + s.missingPct + "%").join(", ") || "none"}
-Data quality issues: ${qualityIssues.slice(0, 5).map(i => i.col + ":" + i.type).join(", ")}
+Data quality issues: ${qualityIssues.slice(0,5).map(i => i.col + ":" + i.type).join(", ")}
 
 Return ONLY a JSON array of 8 objects: [{"icon":"emoji","title":"short","detail":"1-2 sentences, specific values","severity":"info|warn|critical"}]
 No markdown, no explanation outside the JSON.`;
@@ -912,7 +906,7 @@ No markdown, no explanation outside the JSON.`;
       { icon: "📊", title: "Dataset Overview", detail: `${nRows.toLocaleString()} rows, ${csvData.headers.length} columns, ${csvData?.sampled ? "sampled" : "full parse"}. Task type: ${taskType}.`, severity: "info" },
       { icon: "🎯", title: "Target Analysis", detail: `Target "${targetCol}" has ${targetInfo?.unique} unique values. Imbalance ratio: ${targetInfo?.imbalanceRatio}x. Recommended metric: ${targetInfo?.metric}.`, severity: targetInfo?.imbalanceRatio > 3 ? "warn" : "info" },
       { icon: "🕳️", title: "Missing Values", detail: highMissing.length ? `${highMissing.length} columns exceed 10% missing: ${highMissing.map(s => s.name).join(", ")}. Apply ${highMissing[0].imputeStrategy} imputation.` : "No significant missing data detected across all columns.", severity: highMissing.length ? "warn" : "info" },
-      { icon: "📐", title: "Feature Distributions", detail: highSkew.length ? `${highSkew.length} numeric columns have |skew|>1: ${highSkew.slice(0, 3).map(s => s.name + "(" + s.skew + ")").join(", ")}. Log/BoxCox transform recommended.` : "Feature distributions appear approximately symmetric.", severity: highSkew.length > 2 ? "warn" : "info" },
+      { icon: "📐", title: "Feature Distributions", detail: highSkew.length ? `${highSkew.length} numeric columns have |skew|>1: ${highSkew.slice(0,3).map(s => s.name + "(" + s.skew + ")").join(", ")}. Log/BoxCox transform recommended.` : "Feature distributions appear approximately symmetric.", severity: highSkew.length > 2 ? "warn" : "info" },
       { icon: "📦", title: "Outliers", detail: highOutlier.length ? `${highOutlier.length} columns have >10% outliers (IQR). Tree models handle these natively; linear models may need clipping.` : "Outlier rates are within acceptable thresholds (<10% IQR).", severity: highOutlier.length > 2 ? "warn" : "info" },
       { icon: "🔢", title: "Categorical Encoding", detail: `${catCols.filter(s => s.unique <= 8).length} low-card columns → OneHot/Binary. ${catCols.filter(s => s.unique > 8 && s.unique <= 50).length} medium-card → OrdinalEncoder+Target. ${catCols.filter(s => s.unique > 50).length} high-card → FrequencyEncoder.`, severity: "info" },
       { icon: "🌳", title: "Model Recommendation", detail: `Ensemble tree models (LGBM, XGBoost, RandomForest) are recommended for mixed-type features and robustness. Linear models as baselines. Scale non-tree models.`, severity: "info" },
@@ -928,7 +922,7 @@ No markdown, no explanation outside the JSON.`;
     try {
       // Build FormData with CSV blob
       const csvContent = [csvData.headers.join(","),
-      ...csvData.rows.map(r => r.map(v => v.includes?.(",") ? `"${v}"` : v).join(","))
+        ...csvData.rows.map(r => r.map(v => v.includes?.(",") ? `"${v}"` : v).join(","))
       ].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv" });
       const formData = new FormData();
@@ -1059,7 +1053,7 @@ Write exactly 5 paragraphs with these headings on their own line:
 ~250 words total. Be specific with numbers from the data above.`;
 
     const reportRaw = await callClaude(reportPrompt);
-    setFullReport(reportRaw || `EXECUTIVE SUMMARY\n\nThe ModelForge AutoML pipeline was executed on ${csvData.filename} containing ${nRows.toLocaleString()} rows and ${csvData.headers.length} columns. The task was identified as ${taskType} targeting "${targetCol}". After comprehensive preprocessing and benchmarking across ${modelList.length} algorithms with 5-fold cross-validation, ${best?.name || "the best model"} emerged as the top performer with a tuned ${isRegLocal ? "R²" : "accuracy"} of ${best?.tuned_score?.toFixed(4) || "N/A"}.\n\nDATA QUALITY AND PREPROCESSING\n\n${qualityIssues.length} data quality issues were detected across the dataset. ${highMissing.length} columns exceeded 10% missing values, addressed through ${numCols.some(s => s.imputeStrategy === "median") ? "median" : "mean"} imputation for numeric features and most-frequent for categorical. ${catCols.length} categorical columns were encoded using a cardinality-aware strategy: Binary/OneHot for low-cardinality and TargetEncoder for high-cardinality features. ${csvData.sampled ? `Dataset was sampled to ${csvData.sampleSize.toLocaleString()} rows for processing.` : "Full dataset was processed without sampling."}\n\nMODEL EVALUATION AND SELECTION\n\nAll ${modelList.length} algorithms were benchmarked using Stratified 5-fold cross-validation. Gradient boosting ensembles dominated the leaderboard as expected for tabular data. ${best?.name} achieved the highest CV ${isRegLocal ? "R²" : "accuracy"} of ${tuned[0]?.base_score?.toFixed(4) || "N/A"} before tuning. The top 2 models were forwarded to GridSearchCV for hyperparameter optimization.\n\nHYPERPARAMETER OPTIMIZATION\n\nGridSearchCV with cv=5 was applied to ${top2.join(" and ")}. ${best?.name} achieved a tuned score of ${best?.tuned_score?.toFixed(4)} — an improvement of +${best?.improvement?.toFixed(4)} over the baseline. Best parameters: ${JSON.stringify(best?.best_params || {})}. The improvement validates the search space coverage and cross-validation stability.\n\nPRODUCTION DEPLOYMENT NOTES\n\nDeploy ${best?.name} within the fitted ColumnTransformer pipeline to ensure consistent preprocessing at inference time. Monitor for data drift on incoming features — particularly ${numCols.slice(0, 2).map(s => s.name).join(", ")}. Retrain quarterly or when validation performance degrades by >2% from this baseline. ${isRegLocal ? "" : targetInfo?.imbalanceRatio > 3 ? "Address class imbalance in production with SMOTE or class_weight='balanced'." : "Class distribution appears balanced — standard monitoring applies."}`);
+    setFullReport(reportRaw || `EXECUTIVE SUMMARY\n\nThe ModelForge AutoML pipeline was executed on ${csvData.filename} containing ${nRows.toLocaleString()} rows and ${csvData.headers.length} columns. The task was identified as ${taskType} targeting "${targetCol}". After comprehensive preprocessing and benchmarking across ${modelList.length} algorithms with 5-fold cross-validation, ${best?.name || "the best model"} emerged as the top performer with a tuned ${isRegLocal ? "R²" : "accuracy"} of ${best?.tuned_score?.toFixed(4) || "N/A"}.\n\nDATA QUALITY AND PREPROCESSING\n\n${qualityIssues.length} data quality issues were detected across the dataset. ${highMissing.length} columns exceeded 10% missing values, addressed through ${numCols.some(s => s.imputeStrategy === "median") ? "median" : "mean"} imputation for numeric features and most-frequent for categorical. ${catCols.length} categorical columns were encoded using a cardinality-aware strategy: Binary/OneHot for low-cardinality and TargetEncoder for high-cardinality features. ${csvData.sampled ? `Dataset was sampled to ${csvData.sampleSize.toLocaleString()} rows for processing.` : "Full dataset was processed without sampling."}\n\nMODEL EVALUATION AND SELECTION\n\nAll ${modelList.length} algorithms were benchmarked using Stratified 5-fold cross-validation. Gradient boosting ensembles dominated the leaderboard as expected for tabular data. ${best?.name} achieved the highest CV ${isRegLocal ? "R²" : "accuracy"} of ${tuned[0]?.base_score?.toFixed(4) || "N/A"} before tuning. The top 2 models were forwarded to GridSearchCV for hyperparameter optimization.\n\nHYPERPARAMETER OPTIMIZATION\n\nGridSearchCV with cv=5 was applied to ${top2.join(" and ")}. ${best?.name} achieved a tuned score of ${best?.tuned_score?.toFixed(4)} — an improvement of +${best?.improvement?.toFixed(4)} over the baseline. Best parameters: ${JSON.stringify(best?.best_params || {})}. The improvement validates the search space coverage and cross-validation stability.\n\nPRODUCTION DEPLOYMENT NOTES\n\nDeploy ${best?.name} within the fitted ColumnTransformer pipeline to ensure consistent preprocessing at inference time. Monitor for data drift on incoming features — particularly ${numCols.slice(0,2).map(s => s.name).join(", ")}. Retrain quarterly or when validation performance degrades by >2% from this baseline. ${isRegLocal ? "" : targetInfo?.imbalanceRatio > 3 ? "Address class imbalance in production with SMOTE or class_weight='balanced'." : "Class distribution appears balanced — standard monitoring applies."}`);
 
     // Generate Python code
     const code = generatePythonCode(csvData, stats, targetCol, dropCols, pipe, tuned, best, targetInfo);
@@ -1144,11 +1138,11 @@ Write exactly 5 paragraphs with these headings on their own line:
           return r;
         }
         const newR = [...r];
-        if (op === "fill_mean" && stat?.mean != null) newR[idx] = String(stat.mean);
+        if (op === "fill_mean"   && stat?.mean   != null) newR[idx] = String(stat.mean);
         else if (op === "fill_median" && stat?.median != null) newR[idx] = String(stat.median);
-        else if (op === "fill_mode" && stat?.topValues?.[0]) newR[idx] = stat.topValues[0][0];
-        else if (op === "fill_zero") newR[idx] = "0";
-        else if (op === "drop_row") newR[idx] = "__DROP_ROW__";
+        else if (op === "fill_mode"   && stat?.topValues?.[0]) newR[idx] = stat.topValues[0][0];
+        else if (op === "fill_zero")  newR[idx] = "0";
+        else if (op === "drop_row")   newR[idx] = "__DROP_ROW__";
         return newR;
       });
     });
@@ -1180,33 +1174,90 @@ Write exactly 5 paragraphs with these headings on their own line:
     URL.revokeObjectURL(url);
   }, [cleanedRows, csvData]);
 
-  // ── LIVE PREDICTION ─────────────────────────────────────────────
+  // ── LIVE PREDICTION — Real backend inference ───────────────────
   const runPrediction = useCallback(async () => {
-    if (!bestModel || !targetCol) return;
+    if (!bestModel || !targetCol || !csvData) return;
     setPredLoading(true); setPredResult(null);
-    const featCols = stats.filter(s => s.name !== targetCol && !dropCols.includes(s.name));
-    const inputSummary = featCols.map(s => `${s.name}=${predInputs[s.name] || (s.type === "numeric" ? s.mean || 0 : s.topValues?.[0]?.[0] || "unknown")}`).join(", ");
 
-    const prompt = `You are an ML model (${bestModel.name}) trained on a ${targetInfo?.taskType} task predicting "${targetCol}".
+    const BACKEND = "https://aman12213-modelforge-backend.hf.space";
+    const featCols = stats.filter(s => s.name !== targetCol && !dropCols.includes(s.name));
+
+    // Build row data — use user inputs or fall back to training defaults
+    const rowData = {};
+    featCols.forEach(s => {
+      const val = predInputs[s.name];
+      if (val !== undefined && val !== "") {
+        rowData[s.name] = s.type === "numeric" ? parseFloat(val) : val;
+      } else {
+        rowData[s.name] = s.type === "numeric"
+          ? (s.mean || 0)
+          : (s.topValues?.[0]?.[0] || "");
+      }
+    });
+
+    try {
+      // Rebuild CSV from loaded data and send to backend /predict
+      const csvContent = [
+        csvData.headers.join(","),
+        ...csvData.rows.map(r => r.map(v => v?.includes?.(",") ? `"${v}"` : v).join(","))
+      ].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const formData = new FormData();
+      formData.append("file", blob, csvData.filename || "data.csv");
+      formData.append("target", targetCol);
+      formData.append("row_json", JSON.stringify(rowData));
+
+      const res = await fetch(`${BACKEND}/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error(`Backend ${res.status}`);
+      const data = await res.json();
+
+      // Map backend response to UI format
+      const probas = data.probabilities
+        ? Object.values(data.probabilities)
+        : null;
+      const confidence = probas ? Math.max(...probas) : null;
+
+      setPredResult({
+        prediction: data.prediction,
+        confidence: confidence,
+        explanation: `Predicted by ${bestModel.name} trained on your actual dataset (${csvData.totalLines?.toLocaleString()} rows). This is a real model inference — not a simulation.`,
+        top_features: featureImp.slice(0, 3).map(f => ({
+          name: f.feature,
+          impact: f.importance > 0.2 ? "positive" : f.importance > 0.08 ? "neutral" : "negative",
+        })),
+        probabilities: data.probabilities || null,
+        source: "real_model",
+      });
+
+    } catch (err) {
+      console.warn("Backend prediction failed, falling back to Claude simulation:", err);
+
+      // Fallback — Claude simulation if backend is down
+      const inputSummary = featCols.map(s => `${s.name}=${rowData[s.name]}`).join(", ");
+      const prompt = `You are an ML model (${bestModel.name}) trained on a ${targetInfo?.taskType} task predicting "${targetCol}".
 Input features: ${inputSummary}
 Training stats: best model score = ${bestModel.tuned_score?.toFixed(4)}, task = ${targetInfo?.taskType}
+Return ONLY JSON: {"prediction":"value","confidence":0.XX,"explanation":"1 sentence why","top_features":[{"name":"feat","impact":"positive|negative|neutral"}]}`;
 
-Simulate a realistic prediction. Return ONLY JSON:
-{"prediction":"value","confidence":0.XX,"explanation":"1 sentence why","top_features":[{"name":"feat","impact":"positive|negative|neutral"}]}
-For regression return a numeric prediction. For classification return the predicted class.`;
+      const raw = await callClaude(prompt);
+      const parsed = parseJSON(raw);
+      setPredResult(parsed || {
+        prediction: targetInfo?.taskType === "regression"
+          ? (stats.find(s => s.name === targetCol)?.mean || 42).toFixed(2)
+          : (targetInfo?.distribution?.[0]?.[0] || "Class A"),
+        confidence: 0.87,
+        explanation: `[Simulation — backend unavailable] Based on the provided feature values, ${bestModel.name} predicts this outcome.`,
+        top_features: featCols.slice(0, 3).map((s, i) => ({ name: s.name, impact: ["positive", "negative", "neutral"][i % 3] })),
+        source: "simulation",
+      });
+    }
 
-    const raw = await callClaude(prompt);
-    const parsed = parseJSON(raw);
-    setPredResult(parsed || {
-      prediction: targetInfo?.taskType === "regression"
-        ? (stats.find(s => s.name === targetCol)?.mean || 42).toFixed(2)
-        : (targetInfo?.distribution?.[0]?.[0] || "Class A"),
-      confidence: 0.87,
-      explanation: `Based on the provided feature values, ${bestModel.name} predicts this outcome with high confidence.`,
-      top_features: featCols.slice(0, 3).map((s, i) => ({ name: s.name, impact: ["positive", "negative", "neutral"][i % 3] })),
-    });
     setPredLoading(false);
-  }, [bestModel, targetCol, stats, dropCols, predInputs, targetInfo]);
+  }, [bestModel, targetCol, stats, dropCols, predInputs, targetInfo, csvData, featureImp]);
 
   // Compute health score when results are ready
   useEffect(() => {
@@ -1222,51 +1273,12 @@ For regression return a numeric prediction. For classification return the predic
     });
   };
 
-  // ── DOWNLOAD TRAINED MODEL (.pkl) from HuggingFace backend ──────
-  const downloadTrainedModel = useCallback(async () => {
-    if (!csvData || !targetCol || modelDownloading) return;
-    setModelDownloading(true);
-    try {
-      const csvContent = [
-        csvData.headers.join(","),
-        ...csvData.rows.map(r => r.map(v => v?.includes?.(",") ? `"${v}"` : v).join(","))
-      ].join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const formData = new FormData();
-      formData.append("file", blob, csvData.filename || "data.csv");
-      formData.append("target", targetCol);
-
-      const res = await fetch("https://aman12213-modelforge-backend.hf.space/download_model", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error(`Backend returned ${res.status}`);
-
-      const dlBlob = await res.blob();
-      const url    = URL.createObjectURL(dlBlob);
-      const a      = document.createElement("a");
-      a.href       = url;
-      const disposition = res.headers.get("Content-Disposition");
-      const fname = disposition?.match(/filename="(.+?)"/)?.[1]
-                    || `modelforge_${bestModel?.name?.toLowerCase() || "model"}_${targetCol}.pkl`;
-      a.download = fname;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Model download failed:", err);
-      alert("❌ Model download failed. Ensure the backend is running and try again.");
-    } finally {
-      setModelDownloading(false);
-    }
-  }, [csvData, targetCol, bestModel, modelDownloading]);
-
-  const downloadModelCode = () => {
+  const downloadPythonCode = () => {
     const blob = new Blob([pythonCode], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pipeline_${bestModel?.name?.toLowerCase() || "model"}.py`;
+    a.download = `modelforge_${bestModel?.name || "pipeline"}.py`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1302,7 +1314,7 @@ For regression return a numeric prediction. For classification return the predic
       "CV BENCHMARK (5-fold)",
       "═══════════════════════════════════════════",
       ...modelResults.map((m, i) =>
-        `  ${String(i + 1).padStart(2)}. ${m.name.padEnd(35)} ${isR ? "R²" : "Acc"}=${(isR ? m.cv_mean : m.cv_mean).toFixed(4)} ±${m.cv_std?.toFixed(4)}  [${m.tag}]`
+        `  ${String(i+1).padStart(2)}. ${m.name.padEnd(35)} ${isR ? "R²" : "Acc"}=${(isR ? m.cv_mean : m.cv_mean).toFixed(4)} ±${m.cv_std?.toFixed(4)}  [${m.tag}]`
       ),
       "",
       "═══════════════════════════════════════════",
@@ -1318,7 +1330,7 @@ For regression return a numeric prediction. For classification return the predic
       "FEATURE IMPORTANCE",
       "═══════════════════════════════════════════",
       ...featureImp.map((f, i) =>
-        `  ${String(i + 1).padStart(2)}. ${f.feature.padEnd(32)} ${(f.importance * 100).toFixed(2)}%`
+        `  ${String(i+1).padStart(2)}. ${f.feature.padEnd(32)} ${(f.importance * 100).toFixed(2)}%`
       ),
       "",
       "═══════════════════════════════════════════",
@@ -1385,8 +1397,8 @@ For regression return a numeric prediction. For classification return the predic
               cursor: "pointer", fontSize: 12, fontFamily: T.fontMono,
               transition: "all 0.15s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = T.cyan + "50"; e.currentTarget.style.color = T.textSoft; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textMuted; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = T.cyan + "50"; e.currentTarget.style.color = T.textSoft; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textMuted; }}
             >
               ← New Dataset
             </button>
@@ -1619,12 +1631,13 @@ For regression return a numeric prediction. For classification return the predic
                   {stats.map(s => (
                     <div key={s.name} style={{
                       background: T.bg, borderRadius: 10, padding: "10px 13px",
-                      border: `1px solid ${s.isLeaky ? T.red + "50" :
-                          s.name === targetCol ? T.amber + "40" :
-                            dropCols.includes(s.name) ? T.red + "30" :
-                              s.type === "numeric" ? T.cyan + "20" :
-                                s.type === "datetime" ? T.green + "20" : T.purple + "20"
-                        }`,
+                      border: `1px solid ${
+                        s.isLeaky ? T.red + "50" :
+                        s.name === targetCol ? T.amber + "40" :
+                        dropCols.includes(s.name) ? T.red + "30" :
+                        s.type === "numeric" ? T.cyan + "20" :
+                        s.type === "datetime" ? T.green + "20" : T.purple + "20"
+                      }`,
                       opacity: dropCols.includes(s.name) ? 0.4 : 1,
                     }}>
                       <div style={{
@@ -1662,8 +1675,8 @@ For regression return a numeric prediction. For classification return the predic
                 boxShadow: `0 8px 32px ${T.cyan}30`,
                 transition: "all 0.15s",
               }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 12px 40px ${T.cyan}40`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 8px 32px ${T.cyan}30`; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 12px 40px ${T.cyan}40`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 8px 32px ${T.cyan}30`; }}
               >
                 Run Full ML Pipeline →
               </button>
@@ -1741,6 +1754,20 @@ For regression return a numeric prediction. For classification return the predic
                       <div style={{ color: T.textMuted, fontSize: 11, marginTop: 5, fontFamily: T.fontMono }}>
                         {isReg ? "R² score" : "CV accuracy"}
                       </div>
+                      <a
+                        href="https://aman12213-modelforge-backend.hf.space/download-model"
+                        download="modelforge_model.pkl"
+                        style={{
+                          display: "inline-block", marginTop: 12,
+                          background: T.amberDim,
+                          border: `1px solid ${T.amber}40`,
+                          color: T.amber, padding: "7px 18px",
+                          borderRadius: 8, fontSize: 12,
+                          fontFamily: T.fontMono, textDecoration: "none",
+                        }}
+                      >
+                        ↓ Download Model (.pkl)
+                      </a>
                     </div>
                   </div>
                 </GlassCard>
@@ -2015,12 +2042,12 @@ For regression return a numeric prediction. For classification return the predic
                           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
                             {[["Base", t.base_score, T.textSoft], ["→", null, null], ["Tuned", t.tuned_score, T.green], ["Δ", t.improvement, T.amber]].map(([lbl, val, color]) => (
                               lbl === "→" ? <div key="arr" style={{ color: T.green, fontSize: 20 }}>→</div> :
-                                <div key={lbl} style={{ textAlign: "center" }}>
-                                  <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.fontMono, marginBottom: 4 }}>{lbl}</div>
-                                  <div style={{ fontFamily: T.fontMono, fontSize: 22, fontWeight: 500, color }}>
-                                    {lbl === "Δ" ? "+" : ""}{isReg ? val?.toFixed(4) : (val * 100)?.toFixed(2) + "%"}
-                                  </div>
+                              <div key={lbl} style={{ textAlign: "center" }}>
+                                <div style={{ fontSize: 11, color: T.textMuted, fontFamily: T.fontMono, marginBottom: 4 }}>{lbl}</div>
+                                <div style={{ fontFamily: T.fontMono, fontSize: 22, fontWeight: 500, color }}>
+                                  {lbl === "Δ" ? "+" : ""}{isReg ? val?.toFixed(4) : (val * 100)?.toFixed(2) + "%"}
                                 </div>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -2072,7 +2099,7 @@ For regression return a numeric prediction. For classification return the predic
                         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
                           {featureImp.map((f, i) => (
                             <div key={f.feature} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 12 }}>
-                              <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.textMuted, width: 20, textAlign: "right" }}>#{i + 1}</span>
+                              <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.textMuted, width: 20, textAlign: "right" }}>#{i+1}</span>
                               <span style={{ flex: 1, color: T.textSoft, fontFamily: T.fontMono, fontSize: 11 }}>{f.feature}</span>
                               <Badge label={f.type || "num"} color={f.type === "categorical" ? T.purple : T.cyan} small />
                               <span style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 500, color: PALETTE[i % PALETTE.length], minWidth: 50, textAlign: "right" }}>
@@ -2101,20 +2128,20 @@ For regression return a numeric prediction. For classification return the predic
                         const color = s.isLeaky || s.unique === 1 ? T.red : s.missing > 0 ? T.amber : s.outlierPct > 5 ? T.purple : T.textMuted;
                         const options = s.type === "numeric"
                           ? [
-                            { value: "", label: "No action" },
-                            { value: "fill_mean", label: `Fill missing → mean (${s.mean})` },
-                            { value: "fill_median", label: `Fill missing → median (${s.median})` },
-                            { value: "fill_zero", label: "Fill missing → 0" },
-                            { value: "drop_row", label: "Drop rows with missing" },
-                            { value: "cap_outliers", label: `Cap outliers (IQR) — ${s.outlierPct}% affected` },
-                            { value: "drop_col", label: "Drop entire column" },
-                          ]
+                              { value: "", label: "No action" },
+                              { value: "fill_mean",   label: `Fill missing → mean (${s.mean})` },
+                              { value: "fill_median", label: `Fill missing → median (${s.median})` },
+                              { value: "fill_zero",   label: "Fill missing → 0" },
+                              { value: "drop_row",    label: "Drop rows with missing" },
+                              { value: "cap_outliers",label: `Cap outliers (IQR) — ${s.outlierPct}% affected` },
+                              { value: "drop_col",    label: "Drop entire column" },
+                            ]
                           : [
-                            { value: "", label: "No action" },
-                            { value: "fill_mode", label: `Fill missing → most frequent (${s.topValues?.[0]?.[0] || "?"})` },
-                            { value: "drop_row", label: "Drop rows with missing" },
-                            { value: "drop_col", label: "Drop entire column" },
-                          ];
+                              { value: "", label: "No action" },
+                              { value: "fill_mode",  label: `Fill missing → most frequent (${s.topValues?.[0]?.[0] || "?"})` },
+                              { value: "drop_row",   label: "Drop rows with missing" },
+                              { value: "drop_col",   label: "Drop entire column" },
+                            ];
                         return (
                           <div key={s.name} style={{
                             display: "flex", alignItems: "center", gap: 12,
@@ -2274,7 +2301,13 @@ For regression return a numeric prediction. For classification return the predic
 
                       {predResult && (
                         <GlassCard glow style={{ animation: "fadeUp 0.3s ease" }}>
-                          <SectionTitle label="Prediction Result" accent={T.amber} />
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                            <SectionTitle label="Prediction Result" accent={T.amber} />
+                            {predResult?.source === "real_model"
+                              ? <Badge label="Real Model" color={T.green} small />
+                              : <Badge label="Simulation" color={T.amber} small />
+                            }
+                          </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", marginBottom: 20 }}>
                             <div style={{ textAlign: "center" }}>
                               <div style={{ fontSize: 10, color: T.textMuted, fontFamily: T.fontMono, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>Predicted {targetCol}</div>
@@ -2293,6 +2326,22 @@ For regression return a numeric prediction. For classification return the predic
                               <div style={{ fontSize: 13, color: T.textSoft, lineHeight: 1.6 }}>{predResult.explanation}</div>
                             </div>
                           </div>
+                          {predResult.probabilities && (
+                            <div style={{ marginBottom: 16 }}>
+                              <div style={{ fontSize: 10, color: T.textMuted, fontFamily: T.fontMono, letterSpacing: 1.5, marginBottom: 10, textTransform: "uppercase" }}>Class Probabilities</div>
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                {Object.entries(predResult.probabilities).map(([cls, prob]) => (
+                                  <div key={cls} style={{
+                                    background: T.surface, border: `1px solid ${T.border}`,
+                                    borderRadius: 8, padding: "6px 14px", textAlign: "center",
+                                  }}>
+                                    <div style={{ fontFamily: T.fontMono, fontSize: 14, fontWeight: 600, color: T.cyan }}>{(prob * 100).toFixed(1)}%</div>
+                                    <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{cls}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           {predResult.top_features?.length > 0 && (
                             <div>
                               <div style={{ fontSize: 10, color: T.textMuted, fontFamily: T.fontMono, letterSpacing: 1.5, marginBottom: 10, textTransform: "uppercase" }}>Feature Impact</div>
@@ -2344,7 +2393,7 @@ For regression return a numeric prediction. For classification return the predic
                         <Badge label="sklearn" color={T.cyan} small />
                         <Badge label="production" color={T.amber} small />
                       </div>
-                      <div style={{ display: "flex", gap: 10 }}>
+                      <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={copyCode} style={{
                           background: copySuccess ? T.green + "20" : T.cyanDim,
                           border: `1px solid ${copySuccess ? T.green + "40" : T.cyan + "30"}`,
@@ -2355,15 +2404,14 @@ For regression return a numeric prediction. For classification return the predic
                         }}>
                           {copySuccess ? "✓ Copied!" : "Copy Code"}
                         </button>
-                        <button onClick={downloadModelCode} style={{
-                          background: T.purple + "20",
-                          border: `1px solid ${T.purple}40`,
+                        <button onClick={downloadPythonCode} style={{
+                          background: T.purpleDim,
+                          border: `1px solid ${T.purple}30`,
                           color: T.purple,
                           padding: "6px 16px", borderRadius: 7,
                           cursor: "pointer", fontSize: 12, fontFamily: T.fontMono,
-                          transition: "all 0.2s",
                         }}>
-                          Download Model (.py)
+                          ↓ Download .py
                         </button>
                       </div>
                     </div>
@@ -2383,7 +2431,7 @@ For regression return a numeric prediction. For classification return the predic
                         else if (/\b(True|False|None)\b/.test(line)) color = T.amber;
                         return (
                           <span key={i} style={{ display: "block" }}>
-                            <span style={{ color: T.textMuted + "60", userSelect: "none", marginRight: 16, fontSize: 10, display: "inline-block", width: 30, textAlign: "right" }}>{i + 1}</span>
+                            <span style={{ color: T.textMuted + "60", userSelect: "none", marginRight: 16, fontSize: 10, display: "inline-block", width: 30, textAlign: "right" }}>{i+1}</span>
                             <span style={{ color }}>{line}</span>
                           </span>
                         );
@@ -2419,54 +2467,18 @@ For regression return a numeric prediction. For classification return the predic
               )}
 
               {/* Download */}
-              <div style={{ display: "flex", gap: 16, marginTop: 24 }}>
-                <button onClick={downloadReport} style={{
-                  flex: 1,
-                  background: `linear-gradient(135deg, ${T.green}, ${T.cyan})`,
-                  color: "#000", border: "none", borderRadius: 12, padding: "15px",
-                  fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 14,
-                  cursor: "pointer", letterSpacing: 0.5, transition: "all 0.15s",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "0.9"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "1"; }}
-                >
-                  Download Full Pipeline Report (.txt)
-                </button>
-                <button onClick={downloadModelCode} style={{
-                  flex: 1,
-                  background: `linear-gradient(135deg, ${T.purple}, ${T.pink})`,
-                  color: "#000", border: "none", borderRadius: 12, padding: "15px",
-                  fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 14,
-                  cursor: "pointer", letterSpacing: 0.5, transition: "all 0.15s",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "0.9"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "1"; }}
-                >
-                  Download Model Script (.py)
-                </button>
-                <button
-                  onClick={downloadTrainedModel}
-                  disabled={modelDownloading}
-                  style={{
-                    flex: 1,
-                    background: modelDownloading
-                      ? T.border
-                      : `linear-gradient(135deg, ${T.amber}, #ff9a3c)`,
-                    color: modelDownloading ? T.textMuted : "#000",
-                    border: "none", borderRadius: 12, padding: "15px",
-                    fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 14,
-                    cursor: modelDownloading ? "not-allowed" : "pointer",
-                    letterSpacing: 0.5, transition: "all 0.15s",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                  }}
-                  onMouseEnter={e => { if (!modelDownloading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "0.9"; } }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "1"; }}
-                >
-                  {modelDownloading
-                    ? <><Spinner size={16} color="#555" /> Training & Downloading...</>
-                    : "↓ Download Trained Model (.pkl)"}
-                </button>
-              </div>
+              <button onClick={downloadReport} style={{
+                width: "100%", marginTop: 24,
+                background: `linear-gradient(135deg, ${T.green}, ${T.cyan})`,
+                color: "#000", border: "none", borderRadius: 12, padding: "15px",
+                fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 14,
+                cursor: "pointer", letterSpacing: 0.5, transition: "all 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "0.9"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "1"; }}
+              >
+                Download Full Pipeline Report (.txt)
+              </button>
             </div>
           )}
 
