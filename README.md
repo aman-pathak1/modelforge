@@ -42,6 +42,12 @@ CSV Upload
 
 ## Features
 
+### 🔐 Secure Authentication
+- **Premium 3D Interface**: stunning 3D glassmorphism design for Login and Signup.
+- **Auto-Verification**: Instant access after signup for a seamless developer experience.
+- **JWT Protection**: Secure token-based session management.
+- **Protected Routes**: Ensuring data privacy across the platform.
+
 ### Data Analysis
 | What | How |
 |---|---|
@@ -120,8 +126,10 @@ with mlflow.start_run():
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite |
+| Styling | Tailwind CSS + Lucide Icons |
+| Animations | **Framer Motion (3D Effects)** |
+| Auth | JWT + React Router |
 | Charts | Recharts |
-| AI Insights | Claude Sonnet API |
 | Backend | FastAPI + Python 3.11 |
 | ML | scikit-learn + LightGBM + XGBoost |
 | Container | Docker |
