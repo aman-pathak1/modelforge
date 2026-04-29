@@ -61,7 +61,16 @@ export const AuthProvider = ({ children }) => {
       await axios.post('/auth/signup', { email, password });
       return true;
     } catch (error) {
-      throw error.response?.data?.detail || "Signup failed";
+      let errorMsg = "Signup failed";
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        if (Array.isArray(detail)) {
+          errorMsg = detail[0].msg || "Validation error";
+        } else {
+          errorMsg = detail;
+        }
+      }
+      throw errorMsg;
     }
   };
 
