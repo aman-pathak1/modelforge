@@ -16,6 +16,25 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // Password validation logic
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter");
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain at least one number");
+      return;
+    }
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      setError("Password must contain at least one special character");
+      return;
+    }
+
     setLoading(true);
     try {
       await signup(email, password);
@@ -131,7 +150,7 @@ export default function Signup() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-white/5 block w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 text-white placeholder-gray-600 focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all outline-none"
                   placeholder="••••••••"
-                  minLength={8}
+                  minLength={6}
                 />
               </div>
             </div>
