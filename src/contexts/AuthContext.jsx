@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Initialize Axios defaults
-  axios.defaults.baseURL = 'https://aman12213-modelforge-backend.hf.space';
+  axios.defaults.baseURL = 'https://aman12213-modelforge-backend.hf.space/';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
