@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Database, Plus, LogOut, LayoutGrid, Clock, 
   ChevronRight, BarChart3, Database as DbIcon, 
-  Settings, User as UserIcon, HelpCircle
+  Settings, User as UserIcon, HelpCircle,
+  ChevronLeft, Menu
 } from 'lucide-react';
 
-// Design Tokens (Matching Pipeline.jsx)
+// Design Tokens
 const T = {
   bg: "#050508",
   surface: "#0a0a10",
@@ -30,8 +31,10 @@ const T = {
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [datasets, setDatasets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchDatasets = async () => {
@@ -52,57 +55,119 @@ export default function Dashboard() {
     navigate('/login');
   };
 
+  const sidebarWidth = isCollapsed ? 80 : 260;
+
   return (
     <div style={{ minHeight: '100vh', background: T.bg, color: T.text, fontFamily: T.fontDisplay }}>
-      {/* Sidebar - Desktop Only */}
-      <aside style={{
-        position: 'fixed', left: 0, top: 0, bottom: 0, width: 240,
-        background: T.surface, borderRight: `1px solid ${T.border}`,
-        padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 32,
-        zIndex: 100, display: window.innerWidth < 1024 ? 'none' : 'flex'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 8px' }}>
+      
+      {/* Sidebar */}
+      <motion.aside 
+        initial={false}
+        animate={{ width: sidebarWidth }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{
+          position: 'fixed', left: 0, top: 0, bottom: 0,
+          background: T.surface, borderRight: `1px solid ${T.border}`,
+          padding: '24px 12px', display: 'flex', flexDirection: 'column', gap: 32,
+          zIndex: 100, overflow: 'hidden'
+        }}
+      >
+        {/* Logo Section */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 8px', position: 'relative' }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
+            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
             background: `linear-gradient(135deg, ${T.cyan}, ${T.purple})`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: T.fontMono, fontWeight: 700, color: '#000'
           }}>MF</div>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: 0.5 }}>ModelForge</span>
+          {!isCollapsed && (
+            <motion.span 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              style={{ fontSize: 20, fontWeight: 700, letterSpacing: 0.5, whiteSpace: 'nowrap' }}
+            >
+              ModelForge
+            </motion.span>
+          )}
         </div>
 
+        {/* Navigation Items */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <NavItem icon={<LayoutGrid size={18}/>} label="Dashboard" active />
-          <NavItem icon={<BarChart3 size={18}/>} label="My Models" />
-          <NavItem icon={<DbIcon size={18}/>} label="Datasets" />
-          <NavItem icon={<Settings size={18}/>} label="Settings" />
+          <NavItem 
+            icon={<LayoutGrid size={20}/>} 
+            label="Dashboard" 
+            active={location.pathname === '/dashboard'} 
+            isCollapsed={isCollapsed}
+            onClick={() => navigate('/dashboard')}
+          />
+          <NavItem 
+            icon={<BarChart3 size={20}/>} 
+            label="My Models" 
+            isCollapsed={isCollapsed}
+            onClick={() => navigate('/dashboard')} 
+          />
+          <NavItem 
+            icon={<DbIcon size={20}/>} 
+            label="Datasets" 
+            isCollapsed={isCollapsed}
+            onClick={() => navigate('/dashboard')}
+          />
+          <NavItem 
+            icon={<Settings size={20}/>} 
+            label="Settings" 
+            isCollapsed={isCollapsed}
+            onClick={() => navigate('/dashboard')}
+          />
         </nav>
 
+        {/* User & Footer */}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{
             padding: 12, background: T.card, borderRadius: 12, border: `1px solid ${T.border}`,
-            display: 'flex', alignItems: 'center', gap: 10
+            display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden'
           }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.cyanDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.cyan }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: T.cyanDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.cyan }}>
               <UserIcon size={16} />
             </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, truncate: true }}>{user?.email?.split('@')[0]}</div>
-              <div style={{ fontSize: 10, color: T.textMuted }}>Pro Member</div>
-            </div>
+            {!isCollapsed && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.email?.split('@')[0]}
+                </div>
+                <div style={{ fontSize: 10, color: T.textMuted }}>Pro Member</div>
+              </motion.div>
+            )}
           </div>
+          
           <button onClick={handleLogout} style={{
-            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
             color: T.textMuted, background: 'transparent', border: 'none', cursor: 'pointer',
-            fontSize: 14, transition: '0.2s'
+            fontSize: 14, transition: '0.2s', whiteSpace: 'nowrap'
           }} onMouseEnter={e => e.currentTarget.style.color = '#ff4757'}>
-            <LogOut size={18} /> Logout
+            <LogOut size={20} /> {!isCollapsed && "Logout"}
           </button>
         </div>
-      </aside>
+
+        {/* Toggle Button */}
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          style={{
+            position: 'absolute', right: -12, top: 70, 
+            width: 24, height: 24, borderRadius: '50%',
+            background: T.surface, border: `1px solid ${T.border}`,
+            color: T.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 110, boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+          }}
+        >
+          {isCollapsed ? <Menu size={12} /> : <ChevronLeft size={12} />}
+        </button>
+      </motion.aside>
 
       {/* Main Content */}
-      <main style={{ marginLeft: window.innerWidth < 1024 ? 0 : 240, padding: '40px 48px' }}>
+      <motion.main 
+        animate={{ marginLeft: sidebarWidth }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ padding: '40px 48px' }}
+      >
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
           <div>
             <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>Welcome Back</h1>
@@ -165,7 +230,7 @@ export default function Dashboard() {
             </AnimatePresence>
           </div>
         )}
-      </main>
+      </motion.main>
 
       <style>{`
         .loader {
@@ -179,17 +244,36 @@ export default function Dashboard() {
   );
 }
 
-function NavItem({ icon, label, active = false }) {
+function NavItem({ icon, label, active = false, isCollapsed, onClick }) {
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-      borderRadius: 12, cursor: 'pointer', transition: '0.2s',
-      background: active ? T.cyanDim : 'transparent',
-      color: active ? T.cyan : T.textSoft,
-      fontWeight: active ? 600 : 400
-    }}>
-      {icon}
-      <span style={{ fontSize: 14 }}>{label}</span>
+    <div 
+      onClick={onClick}
+      title={isCollapsed ? label : ""}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+        borderRadius: 12, cursor: 'pointer', transition: '0.2s',
+        background: active ? T.cyanDim : 'transparent',
+        color: active ? T.cyan : T.textSoft,
+        fontWeight: active ? 600 : 400,
+        justifyContent: isCollapsed ? 'center' : 'flex-start'
+      }}
+      onMouseEnter={e => {
+        if (!active) e.currentTarget.style.background = T.border + "40";
+      }}
+      onMouseLeave={e => {
+        if (!active) e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      <div style={{ flexShrink: 0 }}>{icon}</div>
+      {!isCollapsed && (
+        <motion.span 
+          initial={{ opacity: 0, x: -10 }} 
+          animate={{ opacity: 1, x: 0 }}
+          style={{ fontSize: 14, whiteSpace: 'nowrap' }}
+        >
+          {label}
+        </motion.span>
+      )}
     </div>
   );
 }

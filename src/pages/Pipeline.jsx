@@ -862,9 +862,23 @@ export default function Pipeline() {
       setQualityIssues(qIssues);
       setDropCols(autoDropCols);
       setStage("config");
+
+      // ─── IMMEDIATE METADATA SAVE ───────────────────────────────
+      if (user) {
+        axios.post("/api/datasets", {
+          file_name: file.name,
+          number_of_rows: parsed.totalLines,
+          number_of_columns: parsed.headers.length,
+          column_names: parsed.headers,
+          column_types: Object.fromEntries(parsed.headers.map((h, i) => [h, types[i]]))
+        }).then(res => {
+          console.log("✅ Dataset metadata pre-saved:", res.data.id);
+          window._currentDatasetId = res.data.id;
+        }).catch(e => console.error("Metadata pre-save failed:", e));
+      }
     };
     reader.readAsText(file, "UTF-8");
-  }, []);
+  }, [user]);
 
   const handleTargetChange = (col) => {
     setTargetCol(col);
@@ -915,7 +929,7 @@ No markdown, no explanation outside the JSON.`;
 
     const edaRaw = await callClaude(edaPrompt);
     const edaParsed = parseJSON(edaRaw);
-    setEdaInsights(edaParsed || [
+    const finalEda = edaParsed || [
       { icon: "📊", title: "Dataset Overview", detail: `${nRows.toLocaleString()} rows, ${csvData.headers.length} columns, ${csvData?.sampled ? "sampled" : "full parse"}. Task type: ${taskType}.`, severity: "info" },
       { icon: "🎯", title: "Target Analysis", detail: `Target "${targetCol}" has ${targetInfo?.unique} unique values. Imbalance ratio: ${targetInfo?.imbalanceRatio}x. Recommended metric: ${targetInfo?.metric}.`, severity: targetInfo?.imbalanceRatio > 3 ? "warn" : "info" },
       { icon: "🕳️", title: "Missing Values", detail: highMissing.length ? `${highMissing.length} columns exceed 10% missing: ${highMissing.map(s => s.name).join(", ")}. Apply ${highMissing[0].imputeStrategy} imputation.` : "No significant missing data detected across all columns.", severity: highMissing.length ? "warn" : "info" },
@@ -924,7 +938,20 @@ No markdown, no explanation outside the JSON.`;
       { icon: "🔢", title: "Categorical Encoding", detail: `${catCols.filter(s => s.unique <= 8).length} low-card columns → OneHot/Binary. ${catCols.filter(s => s.unique > 8 && s.unique <= 50).length} medium-card → OrdinalEncoder+Target. ${catCols.filter(s => s.unique > 50).length} high-card → FrequencyEncoder.`, severity: "info" },
       { icon: "🌳", title: "Model Recommendation", detail: `Ensemble tree models (LGBM, XGBoost, RandomForest) are recommended for mixed-type features and robustness. Linear models as baselines. Scale non-tree models.`, severity: "info" },
       { icon: "⚙️", title: "Pipeline Strategy", detail: `ColumnTransformer with separate numeric/categorical sub-pipelines. ${csvData.sampled ? "Dataset was sampled — consider full training with incremental learning." : "Full dataset loaded — no sampling needed."}`, severity: "info" },
-    ]);
+    ];
+    setEdaInsights(finalEda);
+
+    // ─── IMMEDIATE EDA SAVE ─────────────────────────────────────
+    if (user && window._currentDatasetId) {
+      axios.post("/api/eda", {
+        dataset_id: window._currentDatasetId,
+        missing_summary: stats.map(s => ({ col: s.name, pct: s.missingPct })),
+        distributions: finalEda.slice(0, 5),
+        correlations: correlations.matrix ? { cols: correlations.cols, matrix: correlations.matrix } : {},
+        key_insights: finalEda
+      }).then(() => console.log("✅ EDA insights saved to history"))
+      .catch(e => console.error("EDA save failed:", e));
+    }
 
     // STEP 4, 5, 6 — REAL BACKEND TRAINING
     setPipelineStep(4); setLoadingMsg("Sending data to backend for real sklearn training...");
@@ -1072,34 +1099,8 @@ Write exactly 5 paragraphs with these headings on their own line:
     const code = generatePythonCode(csvData, stats, targetCol, dropCols, pipe, tuned, best, targetInfo);
     setPythonCode(code);
 
-    // ─── SAVE TO HISTORY (Background) ───────────────────────────
-    if (user && backendSuccess) {
-      try {
-        setLoadingMsg("Archiving results to your history...");
-        // 1. Save Dataset Metadata
-        const dsRes = await axios.post("/api/datasets", {
-          file_name: csvData.filename,
-          number_of_rows: csvData.totalLines,
-          number_of_columns: csvData.headers.length,
-          column_names: csvData.headers,
-          column_types: Object.fromEntries(csvData.headers.map((h, i) => [h, csvData.types[i]]))
-        });
-
-        // 2. Save EDA Summary
-        if (dsRes.data.id) {
-          await axios.post("/api/eda", {
-            dataset_id: dsRes.data.id,
-            missing_summary: stats.map(s => ({ col: s.name, pct: s.missingPct })),
-            distributions: edaParsed?.slice(0, 5) || [],
-            correlations: correlations.matrix ? { cols: correlations.cols, matrix: correlations.matrix } : {},
-            key_insights: edaParsed || []
-          });
-          console.log("✅ Project saved to cloud history");
-        }
-      } catch (saveErr) {
-        console.error("Failed to save history:", saveErr);
-      }
-    }
+    // ─── SAVE TO HISTORY (Legacy - already handled above) ───────
+    // if (user && backendSuccess) { ... }
 
     setStage("results");
     setActiveTab("overview");
