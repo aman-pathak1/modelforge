@@ -9,8 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize Axios defaults
-  axios.defaults.baseURL = 'https://aman12213-modelforge-backend.hf.space/';
+  // Initialize Axios defaults using environment variables
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     const token = localStorage.getItem('token');

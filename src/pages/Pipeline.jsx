@@ -923,7 +923,7 @@ No markdown, no explanation outside the JSON.`;
     // STEP 4, 5, 6 — REAL BACKEND TRAINING
     setPipelineStep(4); setLoadingMsg("Sending data to backend for real sklearn training...");
 
-    const BACKEND = "https://aman12213-modelforge-backend.hf.space";
+    const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
     let backendSuccess = false;
     try {
@@ -1237,7 +1237,7 @@ For regression return a numeric prediction. For classification return the predic
       formData.append("file", blob, csvData.filename || "data.csv");
       formData.append("target", targetCol);
 
-      const res = await fetch("https://aman12213-modelforge-backend.hf.space/download_model", {
+      const res = await fetch(`${BACKEND}/download-model`, {
         method: "POST",
         body: formData,
       });
