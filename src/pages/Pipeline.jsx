@@ -1,4 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, ScatterChart, Scatter, CartesianGrid, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis } from "recharts";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -790,6 +793,9 @@ const TABS = [
 const PIPELINE_STEPS = ["Ingest", "Quality Check", "EDA + Stats", "CV Benchmark", "GridSearchCV", "Feature Imp.", "Report Gen."];
 
 export default function Pipeline() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [stage, setStage] = useState("upload");
   console.log("Pipeline component rendering... Stage:", stage);
   const [csvData, setCsvData] = useState(null);
@@ -1066,6 +1072,35 @@ Write exactly 5 paragraphs with these headings on their own line:
     const code = generatePythonCode(csvData, stats, targetCol, dropCols, pipe, tuned, best, targetInfo);
     setPythonCode(code);
 
+    // ─── SAVE TO HISTORY (Background) ───────────────────────────
+    if (user && backendSuccess) {
+      try {
+        setLoadingMsg("Archiving results to your history...");
+        // 1. Save Dataset Metadata
+        const dsRes = await axios.post("/api/datasets", {
+          file_name: csvData.filename,
+          number_of_rows: csvData.totalLines,
+          number_of_columns: csvData.headers.length,
+          column_names: csvData.headers,
+          column_types: Object.fromEntries(csvData.headers.map((h, i) => [h, csvData.types[i]]))
+        });
+
+        // 2. Save EDA Summary
+        if (dsRes.data.id) {
+          await axios.post("/api/eda", {
+            dataset_id: dsRes.data.id,
+            missing_summary: stats.map(s => ({ col: s.name, pct: s.missingPct })),
+            distributions: edaParsed?.slice(0, 5) || [],
+            correlations: correlations.matrix ? { cols: correlations.cols, matrix: correlations.matrix } : {},
+            key_insights: edaParsed || []
+          });
+          console.log("✅ Project saved to cloud history");
+        }
+      } catch (saveErr) {
+        console.error("Failed to save history:", saveErr);
+      }
+    }
+
     setStage("results");
     setActiveTab("overview");
   };
@@ -1208,6 +1243,55 @@ For regression return a numeric prediction. For classification return the predic
     });
     setPredLoading(false);
   }, [bestModel, targetCol, stats, dropCols, predInputs, targetInfo]);
+
+  // ── LOAD PREVIOUS PROJECT ──────────────────────────────────────
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!id || !user) return;
+      try {
+        setStage("parsing");
+        setLoadingMsg("Loading project from cloud...");
+        
+        // 1. Fetch Dataset Metadata
+        const dsRes = await axios.get(`/api/datasets`);
+        const dataset = dsRes.data.find(d => d.id === id);
+        
+        if (!dataset) {
+          console.error("Project not found");
+          setStage("upload");
+          return;
+        }
+
+        // 2. Fetch EDA Summary
+        const edaRes = await axios.get(`/api/eda/${id}`);
+        const eda = edaRes.data;
+
+        // Hydrate State
+        setCsvData({
+          filename: dataset.file_name,
+          totalLines: dataset.number_of_rows,
+          headers: dataset.column_names,
+          types: Object.values(dataset.column_types),
+          rows: [], // We don't store full rows in DB for performance
+          sampled: true
+        });
+        
+        setTargetCol(dataset.column_names[dataset.column_names.length - 1]);
+        setEdaInsights(eda.key_insights || []);
+        setCorrelations(eda.correlations || { cols: [], matrix: [] });
+        
+        // Quality issues (mocked since we don't save everything)
+        setQualityIssues([]); 
+        
+        setStage("results");
+        setActiveTab("eda");
+      } catch (err) {
+        console.error("Failed to load project:", err);
+        setStage("upload");
+      }
+    };
+    loadProject();
+  }, [id, user]);
 
   // Compute health score when results are ready
   useEffect(() => {
@@ -1380,7 +1464,7 @@ For regression return a numeric prediction. For classification return the predic
             )}
           </div>
           {stage !== "upload" && stage !== "parsing" && (
-            <button onClick={reset} style={{
+            <button onClick={() => navigate('/dashboard')} style={{
               background: "transparent", border: `1px solid ${T.border}`,
               color: T.textMuted, padding: "5px 14px", borderRadius: 7,
               cursor: "pointer", fontSize: 12, fontFamily: T.fontMono,
@@ -1389,7 +1473,7 @@ For regression return a numeric prediction. For classification return the predic
               onMouseEnter={e => { e.currentTarget.style.borderColor = T.cyan + "50"; e.currentTarget.style.color = T.textSoft; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textMuted; }}
             >
-              ← New Dataset
+              ← Dashboard
             </button>
           )}
         </header>
