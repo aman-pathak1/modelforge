@@ -945,7 +945,7 @@ No markdown, no explanation outside the JSON.`;
 
     // ─── IMMEDIATE EDA SAVE ─────────────────────────────────────
     if (user && window._currentDatasetId) {
-      axios.post("/api/eda", {
+      axios.post(`${BACKEND}/api/eda`, {
         dataset_id: window._currentDatasetId,
         missing_summary: stats.map(s => ({ col: s.name, pct: s.missingPct })),
         distributions: finalEda.slice(0, 5),
@@ -1259,7 +1259,7 @@ For regression return a numeric prediction. For classification return the predic
         setLoadingMsg("Loading project from cloud...");
         
         // 1. Fetch Dataset Metadata
-        const dsRes = await axios.get(`/api/datasets`);
+        const dsRes = await axios.get(`${BACKEND}/api/datasets`);
         const dataset = dsRes.data.find(d => d.id === id);
         
         if (!dataset) {
@@ -1269,7 +1269,7 @@ For regression return a numeric prediction. For classification return the predic
         }
 
         // 2. Fetch EDA Summary
-        const edaRes = await axios.get(`/api/eda/${id}`);
+        const edaRes = await axios.get(`${BACKEND}/api/eda/${id}`);
         const eda = edaRes.data;
 
         // Hydrate State
@@ -1347,7 +1347,7 @@ For regression return a numeric prediction. For classification return the predic
 
       // Save to My Models history
       if (user && window._currentDatasetId) {
-        axios.post("/api/models", {
+        axios.post(`${BACKEND}/api/models`, {
           dataset_id: window._currentDatasetId,
           model_name: bestModel?.name || "Standard Model",
           accuracy: `${(bestModel?.tuned_score * 100).toFixed(2)}%`,

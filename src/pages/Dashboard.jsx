@@ -38,12 +38,14 @@ export default function Dashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("Dashboard");
 
+  const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [dsRes, modRes] = await Promise.all([
-          axios.get('/api/datasets'),
-          axios.get('/api/models')
+          axios.get(`${BACKEND}/api/datasets`),
+          axios.get(`${BACKEND}/api/models`)
         ]);
         setDatasets(dsRes.data);
         setModels(modRes.data);
@@ -390,18 +392,6 @@ function ModelCard({ model, index }) {
         <div style={{ fontSize: 12, color: T.textMuted }}>Dataset ID: ...{model.dataset_id?.slice(-6)}</div>
       </div>
     </motion.div>
-  );
-}
-
-      <style>{`
-        .loader {
-          width: 40px; height: 40px; border: 3px solid ${T.cyanDim};
-          border-top-color: ${T.cyan}; border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-    </div>
   );
 }
 
