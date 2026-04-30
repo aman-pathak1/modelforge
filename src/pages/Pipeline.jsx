@@ -797,6 +797,8 @@ export default function Pipeline() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [stage, setStage] = useState("upload");
+
+  const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:8000";
   console.log("Pipeline component rendering... Stage:", stage);
   const [csvData, setCsvData] = useState(null);
   const [stats, setStats] = useState([]);
@@ -955,8 +957,6 @@ No markdown, no explanation outside the JSON.`;
 
     // STEP 4, 5, 6 — REAL BACKEND TRAINING
     setPipelineStep(4); setLoadingMsg("Sending data to backend for real sklearn training...");
-
-    const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
     let backendSuccess = false;
     try {
