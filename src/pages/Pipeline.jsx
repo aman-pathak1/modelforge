@@ -950,7 +950,12 @@ No markdown, no explanation outside the JSON.`;
         missing_summary: stats.map(s => ({ col: s.name, pct: s.missingPct })),
         distributions: finalEda.slice(0, 5),
         correlations: correlations.matrix ? { cols: correlations.cols, matrix: correlations.matrix } : {},
-        key_insights: finalEda
+        key_insights: finalEda,
+        health_score: computeHealthScore(stats, qualityIssues, csvData?.totalLines || 0),
+        preprocessing_details: {
+          imputation: stats.filter(s => s.missingPct > 0).map(s => ({ col: s.name, strategy: s.imputeStrategy })),
+          encoding: stats.filter(s => s.type !== "numeric").map(s => ({ col: s.name, strategy: s.encodingStrategy }))
+        }
       }).then(() => console.log("✅ EDA insights saved to history"))
       .catch(e => console.error("EDA save failed:", e));
     }
@@ -1339,6 +1344,17 @@ For regression return a numeric prediction. For classification return the predic
       a.download = fname;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Save to My Models history
+      if (user && window._currentDatasetId) {
+        axios.post("/api/models", {
+          dataset_id: window._currentDatasetId,
+          model_name: bestModel?.name || "Standard Model",
+          accuracy: `${(bestModel?.tuned_score * 100).toFixed(2)}%`,
+          task_type: targetInfo?.taskType || "ml"
+        }).then(() => console.log("✅ Model added to My Models"))
+        .catch(e => console.error("Model history save failed:", e));
+      }
     } catch (err) {
       console.error("Model download failed:", err);
       alert("❌ Model download failed. Ensure the backend is running and try again.");

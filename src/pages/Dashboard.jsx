@@ -33,21 +33,27 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [datasets, setDatasets] = useState([]);
+  const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState("Dashboard");
 
   useEffect(() => {
-    const fetchDatasets = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('/api/datasets');
-        setDatasets(res.data);
+        const [dsRes, modRes] = await Promise.all([
+          axios.get('/api/datasets'),
+          axios.get('/api/models')
+        ]);
+        setDatasets(dsRes.data);
+        setModels(modRes.data);
       } catch (err) {
-        console.error("Failed to fetch datasets", err);
+        console.error("Failed to fetch data", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchDatasets();
+    fetchData();
   }, []);
 
   const handleLogout = () => {
@@ -95,27 +101,30 @@ export default function Dashboard() {
           <NavItem 
             icon={<LayoutGrid size={20}/>} 
             label="Dashboard" 
-            active={location.pathname === '/dashboard'} 
+            active={activeTab === 'Dashboard'} 
             isCollapsed={isCollapsed}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => setActiveTab('Dashboard')}
           />
           <NavItem 
             icon={<BarChart3 size={20}/>} 
             label="My Models" 
+            active={activeTab === 'My Models'}
             isCollapsed={isCollapsed}
-            onClick={() => navigate('/dashboard')} 
+            onClick={() => setActiveTab('My Models')} 
           />
           <NavItem 
             icon={<DbIcon size={20}/>} 
             label="Datasets" 
+            active={activeTab === 'Datasets'}
             isCollapsed={isCollapsed}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => setActiveTab('Datasets')}
           />
           <NavItem 
             icon={<Settings size={20}/>} 
             label="Settings" 
+            active={activeTab === 'Settings'}
             isCollapsed={isCollapsed}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => setActiveTab('Settings')}
           />
         </nav>
 
@@ -170,8 +179,12 @@ export default function Dashboard() {
       >
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
           <div>
-            <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>Welcome Back</h1>
-            <p style={{ color: T.textSoft, fontSize: 15 }}>You have {datasets.length} active ML projects in your workspace.</p>
+            <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>
+              {activeTab === 'Dashboard' ? 'Project History' : activeTab}
+            </h1>
+            <p style={{ color: T.textSoft, fontSize: 15 }}>
+              {activeTab === 'Dashboard' ? `You have ${datasets.length} active ML projects in your workspace.` : `Viewing your ${activeTab.toLowerCase()}.`}
+            </p>
           </div>
           <button 
             onClick={() => navigate('/pipeline')}
@@ -191,46 +204,194 @@ export default function Dashboard() {
           <div style={{ height: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div className="loader"></div>
           </div>
-        ) : datasets.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            style={{
-              background: T.card, border: `1px solid ${T.border}`, borderRadius: 24,
-              padding: '80px 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'
-            }}
-          >
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: T.cyanDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.cyan, marginBottom: 24 }}>
-              <Database size={40} />
+        ) : activeTab === 'Dashboard' ? (
+          datasets.length === 0 ? <EmptyState navigate={navigate} /> : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
+              <AnimatePresence>
+                {datasets.map((ds, index) => (
+                  <ProjectCard 
+                    key={ds.id} 
+                    ds={ds} 
+                    index={index} 
+                    onClick={() => navigate(`/eda/${ds.id}`)} 
+                  />
+                ))}
+              </AnimatePresence>
             </div>
-            <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Your Workspace is Empty</h3>
-            <p style={{ color: T.textMuted, maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.6 }}>
-              Start by uploading a dataset. We'll automatically analyze it and help you build production-ready ML models.
-            </p>
-            <button 
-              onClick={() => navigate('/pipeline')}
-              style={{
-                background: 'transparent', border: `1px solid ${T.cyan}`, color: T.cyan,
-                padding: '12px 32px', borderRadius: 12, fontWeight: 600, cursor: 'pointer'
-              }}
-            >
-              Upload Your First CSV
-            </button>
-          </motion.div>
-        ) : (
+          )
+        ) : activeTab === 'My Models' ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-            <AnimatePresence>
-              {datasets.map((ds, index) => (
-                <ProjectCard 
-                  key={ds.id} 
-                  ds={ds} 
-                  index={index} 
-                  onClick={() => navigate(`/eda/${ds.id}`)} 
-                />
-              ))}
-            </AnimatePresence>
+            {models.map((m, idx) => (
+              <ModelCard key={m.id} model={m} index={idx} />
+            ))}
+            {models.length === 0 && <p style={{ color: T.textMuted }}>No models trained yet.</p>}
           </div>
+        ) : activeTab === 'Settings' ? (
+          <SettingsView />
+        ) : (
+          <div style={{ color: T.textSoft }}>Coming soon...</div>
         )}
       </motion.main>
+
+      <style>{`
+        .loader {
+          width: 40px; height: 40px; border: 3px solid ${T.cyanDim};
+          border-top-color: ${T.cyan}; border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+    </div>
+  );
+}
+
+function EmptyState({ navigate }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+      style={{
+        background: T.card, border: `1px solid ${T.border}`, borderRadius: 24,
+        padding: '80px 40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'
+      }}
+    >
+      <div style={{ width: 80, height: 80, borderRadius: '50%', background: T.cyanDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.cyan, marginBottom: 24 }}>
+        <Database size={40} />
+      </div>
+      <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Your Workspace is Empty</h3>
+      <p style={{ color: T.textMuted, maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.6 }}>
+        Start by uploading a dataset. We'll automatically analyze it and help you build production-ready ML models.
+      </p>
+      <button 
+        onClick={() => navigate('/pipeline')}
+        style={{
+          background: 'transparent', border: `1px solid ${T.cyan}`, color: T.cyan,
+          padding: '12px 32px', borderRadius: 12, fontWeight: 600, cursor: 'pointer'
+        }}
+      >
+        Upload Your First CSV
+      </button>
+    </motion.div>
+  );
+}
+
+function NavItem({ icon, label, active = false, isCollapsed, onClick }) {
+  return (
+    <div 
+      onClick={onClick}
+      title={isCollapsed ? label : ""}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+        borderRadius: 12, cursor: 'pointer', transition: '0.2s',
+        background: active ? T.cyanDim : 'transparent',
+        color: active ? T.cyan : T.textSoft,
+        fontWeight: active ? 600 : 400,
+        justifyContent: isCollapsed ? 'center' : 'flex-start'
+      }}
+      onMouseEnter={e => {
+        if (!active) e.currentTarget.style.background = T.border + "40";
+      }}
+      onMouseLeave={e => {
+        if (!active) e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      <div style={{ flexShrink: 0 }}>{icon}</div>
+      {!isCollapsed && (
+        <motion.span 
+          initial={{ opacity: 0, x: -10 }} 
+          animate={{ opacity: 1, x: 0 }}
+          style={{ fontSize: 14, whiteSpace: 'nowrap' }}
+        >
+          {label}
+        </motion.span>
+      )}
+    </div>
+  );
+}
+
+function ProjectCard({ ds, index, onClick }) {
+  const healthColor = ds.health_score > 80 ? T.cyan : ds.health_score > 50 ? "#fbbf24" : "#ef4444";
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ y: -5, borderColor: T.cyan + '60' }}
+      onClick={onClick}
+      style={{
+        background: T.card, border: `1px solid ${T.border}`, borderRadius: 20,
+        padding: 24, cursor: 'pointer', transition: 'border-color 0.3s', position: 'relative'
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: T.purpleDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.purple }}>
+          <BarChart3 size={22} />
+        </div>
+        {ds.health_score && (
+          <div style={{ 
+            fontSize: 10, fontWeight: 800, color: healthColor, 
+            background: healthColor + '15', padding: '4px 8px', borderRadius: 6,
+            border: `1px solid ${healthColor}30`, boxShadow: `0 0 10px ${healthColor}20`
+          }}>
+            HEALTH: {ds.health_score}%
+          </div>
+        )}
+      </div>
+
+      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {ds.file_name}
+      </h3>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: T.textMuted, fontSize: 12, marginBottom: 16 }}>
+        <Clock size={12} />
+        {new Date(ds.upload_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+      </div>
+
+      {ds.key_insights?.length > 0 && (
+        <p style={{ fontSize: 11, color: T.textSoft, marginBottom: 20, lineHeight: 1.5, height: 34, overflow: 'hidden' }}>
+          {ds.key_insights[0].detail}
+        </p>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ background: '#ffffff03', padding: '10px 12px', borderRadius: 10, border: '1px solid #ffffff05' }}>
+          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rows</div>
+          <div style={{ fontFamily: T.fontMono, fontSize: 14, fontWeight: 600, color: T.cyan }}>{ds.number_of_rows?.toLocaleString()}</div>
+        </div>
+        <div style={{ background: '#ffffff03', padding: '10px 12px', borderRadius: 10, border: '1px solid #ffffff05' }}>
+          <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Features</div>
+          <div style={{ fontFamily: T.fontMono, fontSize: 14, fontWeight: 600, color: T.purple }}>{ds.number_of_columns}</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function ModelCard({ model, index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.05 }}
+      style={{
+        background: T.card, border: `1px solid ${T.border}`, borderRadius: 20,
+        padding: 24, borderLeft: `4px solid ${T.cyan}`
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', mb: 16 }}>
+        <h4 style={{ color: T.cyan, fontSize: 12, fontWeight: 800, textTransform: 'uppercase' }}>{model.task_type}</h4>
+        <div style={{ color: T.textMuted, fontSize: 10 }}>{new Date(model.created_at).toLocaleDateString()}</div>
+      </div>
+      <h3 style={{ fontSize: 20, fontWeight: 700, margin: '8px 0' }}>{model.model_name}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+        <div style={{ background: T.cyanDim, padding: '4px 10px', borderRadius: 8, color: T.cyan, fontSize: 14, fontWeight: 700 }}>
+          {model.accuracy} Acc
+        </div>
+        <div style={{ fontSize: 12, color: T.textMuted }}>Dataset ID: ...{model.dataset_id?.slice(-6)}</div>
+      </div>
+    </motion.div>
+  );
+}
 
       <style>{`
         .loader {
@@ -318,5 +479,75 @@ function ProjectCard({ ds, index, onClick }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function SettingsView() {
+  const [theme, setTheme] = useState("dark");
+  const [accent, setAccent] = useState(T.cyan);
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+      style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 40 }}
+    >
+      <section>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Appearance</h3>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <ThemeOption label="Dark Mode" active={theme === "dark"} onClick={() => setTheme("dark")} />
+          <ThemeOption label="Light Mode" active={theme === "light"} onClick={() => setTheme("light")} />
+        </div>
+      </section>
+
+      <section>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Accent Color</h3>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {["#00e5ff", "#9b6dff", "#f59e0b", "#10b981", "#ef4444"].map(c => (
+            <div 
+              key={c}
+              onClick={() => setAccent(c)}
+              style={{
+                width: 32, height: 32, borderRadius: '50%', background: c,
+                cursor: 'pointer', border: accent === c ? `3px solid white` : 'none',
+                boxShadow: accent === c ? `0 0 15px ${c}` : 'none',
+                transition: '0.2s'
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Contrast</h3>
+        <input type="range" style={{ width: '100%', accentColor: accent }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: T.textMuted }}>
+          <span>Standard</span>
+          <span>High Contrast</span>
+        </div>
+      </section>
+
+      <button style={{
+        background: accent, color: '#000', border: 'none', padding: '12px 32px',
+        borderRadius: 12, fontWeight: 700, marginTop: 20, cursor: 'pointer',
+        boxShadow: `0 0 20px ${accent}40`
+      }}>
+        Save Preferences
+      </button>
+    </motion.div>
+  );
+}
+
+function ThemeOption({ label, active, onClick }) {
+  return (
+    <div 
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '24px', borderRadius: 16, border: `1px solid ${active ? T.cyan : T.border}`,
+        background: active ? T.cyanDim : T.card, cursor: 'pointer', textAlign: 'center',
+        transition: '0.2s'
+      }}
+    >
+      <div style={{ fontSize: 14, fontWeight: 600, color: active ? T.cyan : T.textSoft }}>{label}</div>
+    </div>
   );
 }
