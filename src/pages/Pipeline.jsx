@@ -867,7 +867,7 @@ export default function Pipeline() {
 
       // ─── IMMEDIATE METADATA SAVE ───────────────────────────────
       if (user) {
-        axios.post("/api/datasets", {
+        axios.post(`${BACKEND}/api/datasets`, {
           file_name: file.name,
           number_of_rows: parsed.totalLines,
           number_of_columns: parsed.headers.length,
