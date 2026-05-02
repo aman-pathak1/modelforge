@@ -2,78 +2,13 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, ScatterChart, Scatter, CartesianGrid, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis } from "recharts";
 
 // ═══════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════
-const T = {
-  bg: "#050508",
-  surface: "#0a0a10",
-  card: "#0f0f18",
-  cardHover: "#13131e",
-  border: "#1c1c2e",
-  borderMid: "#252540",
-  borderHigh: "#32325a",
-
-  cyan: "#00e5ff",
-  cyanDim: "#00e5ff12",
-  cyanGlow: "#00e5ff25",
-  green: "#00c896",
-  greenDim: "#00c89612",
-  amber: "#ffb627",
-  amberDim: "#ffb62712",
-  red: "#ff4757",
-  redDim: "#ff475712",
-  purple: "#9b6dff",
-  purpleDim: "#9b6dff12",
-  pink: "#ff5fa0",
-
-  text: "#f0f0fa",
-  textSoft: "#9090b8",
-  textMuted: "#55557a",
-
-  fontDisplay: "'Space Grotesk', system-ui, sans-serif",
-  fontMono: "'JetBrains Mono', 'Fira Code', monospace",
-  fontBody: "'DM Sans', system-ui, sans-serif",
-};
-
-const PALETTE = [T.cyan, T.green, T.amber, T.purple, T.pink, T.red, "#7ee8fa", "#80ff72", "#f8d800", "#ff9a3c"];
-
-// ═══════════════════════════════════════════════════════════════════
-// GLOBAL CSS
-// ═══════════════════════════════════════════════════════════════════
-const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: ${T.bg};
-    color: ${T.text};
-    font-family: ${T.fontBody};
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
-  select, input, button { outline: none; font-family: inherit; }
-  input[type="file"] { display: none; }
-  select option { background: ${T.surface}; }
-
-  @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
-  @keyframes spin     { to { transform: rotate(360deg); } }
-  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  @keyframes glow     { 0%,100%{box-shadow:0 0 20px ${T.cyanGlow}} 50%{box-shadow:0 0 50px ${T.cyanGlow},0 0 100px ${T.cyanDim}} }
-  @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
-  @keyframes barIn    { from{width:0} to{width:var(--w)} }
-  @keyframes dotPop   { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
-  @keyframes blink    { 0%,100%{opacity:1} 50%{opacity:0} }
-  @keyframes slideIn  { from{transform:translateX(-10px);opacity:0} to{transform:translateX(0);opacity:1} }
-  @keyframes countUp  { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
-`;
+// Design tokens and styles are now managed via ThemeContext
 
 // ═══════════════════════════════════════════════════════════════════
 // CHUNKED CSV PARSER — handles large files with sampling
@@ -681,10 +616,12 @@ preds = model.predict(new_data)
 // ═══════════════════════════════════════════════════════════════════
 const s = (obj) => obj;
 
-function Badge({ label, color = T.cyan, small = false }) {
+function Badge({ label, color, small = false }) {
+  const { T } = useTheme();
+  const badgeColor = color || T.cyan;
   return (
     <span style={{
-      background: color + "18", color, border: `1px solid ${color}30`,
+      background: badgeColor + "18", color: badgeColor, border: `1px solid ${badgeColor}30`,
       borderRadius: 5, padding: small ? "1px 7px" : "3px 10px",
       fontSize: small ? 10 : 11, fontFamily: T.fontMono,
       whiteSpace: "nowrap", letterSpacing: 0.3, fontWeight: 500,
@@ -693,6 +630,7 @@ function Badge({ label, color = T.cyan, small = false }) {
 }
 
 function GlassCard({ children, style = {}, glow = false, noPad = false }) {
+  const { T } = useTheme();
   return (
     <div style={{
       background: T.card,
@@ -706,49 +644,56 @@ function GlassCard({ children, style = {}, glow = false, noPad = false }) {
   );
 }
 
-function SectionTitle({ label, accent = T.textMuted }) {
+function SectionTitle({ label, accent }) {
+  const { T } = useTheme();
+  const accentColor = accent || T.textMuted;
   return (
     <div style={{
       fontFamily: T.fontMono, fontSize: 10, letterSpacing: 2.5, textTransform: "uppercase",
-      color: accent, marginBottom: 14, display: "flex", alignItems: "center", gap: 8,
+      color: accentColor, marginBottom: 14, display: "flex", alignItems: "center", gap: 8,
     }}>
-      <div style={{ width: 20, height: 1, background: accent + "50" }} />
+      <div style={{ width: 20, height: 1, background: accentColor + "50" }} />
       {label}
-      <div style={{ flex: 1, height: 1, background: accent + "20" }} />
+      <div style={{ flex: 1, height: 1, background: accentColor + "20" }} />
     </div>
   );
 }
 
-function MetricTile({ label, value, sub, color = T.cyan, animate = false }) {
+function MetricTile({ label, value, sub, color, animate = false }) {
+  const { T } = useTheme();
+  const tileColor = color || T.cyan;
   return (
     <div style={{
-      background: color + "08",
-      border: `1px solid ${color}20`,
+      background: tileColor + "08",
+      border: `1px solid ${tileColor}20`,
       borderRadius: 11, padding: "14px 18px", textAlign: "center",
       animation: animate ? "countUp 0.5s ease" : "none",
     }}>
       <div style={{
-        fontFamily: T.fontMono, fontSize: 26, fontWeight: 500, color, lineHeight: 1,
+        fontFamily: T.fontMono, fontSize: 26, fontWeight: 500, color: tileColor, lineHeight: 1,
         marginBottom: 5, letterSpacing: -1,
       }}>{value}</div>
       <div style={{ fontSize: 11, color: T.textMuted, letterSpacing: 0.5 }}>{label}</div>
-      {sub && <div style={{ fontSize: 10, color: color + "80", marginTop: 3, fontFamily: T.fontMono }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10, color: tileColor + "80", marginTop: 3, fontFamily: T.fontMono }}>{sub}</div>}
     </div>
   );
 }
 
-function Spinner({ size = 24, color = T.cyan }) {
+function Spinner({ size = 24, color }) {
+  const { T } = useTheme();
+  const spinnerColor = color || T.cyan;
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%",
-      border: `2px solid ${color}25`,
-      borderTopColor: color,
+      border: `2px solid ${spinnerColor}25`,
+      borderTopColor: spinnerColor,
       animation: "spin 0.7s linear infinite",
     }} />
   );
 }
 
 function PipelineStep({ step, label, active }) {
+  const { T } = useTheme();
   const done = step < active;
   const isCurrent = step === active;
   return (
@@ -796,6 +741,44 @@ export default function Pipeline() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { T, theme } = useTheme();
+  
+  const PALETTE = useMemo(() => [
+    T.cyan, T.green, T.amber, T.purple, T.pink, T.red, "#7ee8fa", "#80ff72", "#f8d800", "#ff9a3c"
+  ], [T]);
+
+  const CSS = useMemo(() => `
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: ${T.bg};
+      color: ${T.text};
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 99px; }
+    select, input, button { outline: none; font-family: inherit; }
+    input[type="file"] { display: none; }
+    select option { background: ${T.surface}; color: ${T.text}; }
+
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes glow     { 0%,100%{box-shadow:0 0 20px ${T.cyan}25} 50%{box-shadow:0 0 50px ${T.cyan}25,0 0 100px ${T.cyan}12} }
+    @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+    @keyframes barIn    { from{width:0} to{width:var(--w)} }
+    @keyframes dotPop   { 0%,80%,100%{transform:scale(0.5);opacity:0.3} 40%{transform:scale(1);opacity:1} }
+    @keyframes blink    { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes slideIn  { from{transform:translateX(-10px);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes countUp  { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+  `, [T]);
+
   const [stage, setStage] = useState("upload");
 
   const BACKEND = import.meta.env.VITE_API_URL || "http://localhost:8000";

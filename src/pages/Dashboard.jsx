@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   Database, Plus, LogOut, LayoutGrid, Clock, 
   ChevronRight, BarChart3, Database as DbIcon, 
@@ -10,26 +11,9 @@ import {
   ChevronLeft, Menu
 } from 'lucide-react';
 
-// Design Tokens
-const T = {
-  bg: "#050508",
-  surface: "#0a0a10",
-  card: "#0f0f18",
-  cardHover: "#13131e",
-  border: "#1c1c2e",
-  cyan: "#00e5ff",
-  cyanDim: "#00e5ff12",
-  purple: "#9b6dff",
-  purpleDim: "#9b6dff12",
-  text: "#f0f0fa",
-  textSoft: "#9090b8",
-  textMuted: "#55557a",
-  fontDisplay: "'Space Grotesk', system-ui, sans-serif",
-  fontMono: "'JetBrains Mono', monospace",
-};
-
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const { T } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [datasets, setDatasets] = useState([]);
@@ -207,7 +191,7 @@ export default function Dashboard() {
             <div className="loader"></div>
           </div>
         ) : activeTab === 'Dashboard' ? (
-          datasets.length === 0 ? <EmptyState navigate={navigate} /> : (
+          datasets.length === 0 ? <EmptyState navigate={navigate} T={T} /> : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
               <AnimatePresence>
                 {datasets.map((ds, index) => (
@@ -216,6 +200,7 @@ export default function Dashboard() {
                     ds={ds} 
                     index={index} 
                     onClick={() => navigate(`/eda/${ds.id}`)} 
+                    T={T}
                   />
                 ))}
               </AnimatePresence>
@@ -224,7 +209,7 @@ export default function Dashboard() {
         ) : activeTab === 'My Models' ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
             {models.map((m, idx) => (
-              <ModelCard key={m.id} model={m} index={idx} />
+              <ModelCard key={m.id} model={m} index={idx} T={T} />
             ))}
             {models.length === 0 && <p style={{ color: T.textMuted }}>No models trained yet.</p>}
           </div>
@@ -247,7 +232,7 @@ export default function Dashboard() {
   );
 }
 
-function EmptyState({ navigate }) {
+function EmptyState({ navigate, T }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -259,7 +244,7 @@ function EmptyState({ navigate }) {
       <div style={{ width: 80, height: 80, borderRadius: '50%', background: T.cyanDim, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.cyan, marginBottom: 24 }}>
         <Database size={40} />
       </div>
-      <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Your Workspace is Empty</h3>
+      <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12, color: T.text }}>Your Workspace is Empty</h3>
       <p style={{ color: T.textMuted, maxWidth: 400, margin: '0 auto 32px', lineHeight: 1.6 }}>
         Start by uploading a dataset. We'll automatically analyze it and help you build production-ready ML models.
       </p>
@@ -277,6 +262,7 @@ function EmptyState({ navigate }) {
 }
 
 function NavItem({ icon, label, active = false, isCollapsed, onClick }) {
+  const { T } = useTheme();
   return (
     <div 
       onClick={onClick}
@@ -310,8 +296,8 @@ function NavItem({ icon, label, active = false, isCollapsed, onClick }) {
   );
 }
 
-function ProjectCard({ ds, index, onClick }) {
-  const healthColor = ds.health_score > 80 ? T.cyan : ds.health_score > 50 ? "#fbbf24" : "#ef4444";
+function ProjectCard({ ds, index, onClick, T }) {
+  const healthColor = ds.health_score > 80 ? T.cyan : ds.health_score > 50 ? T.amber : T.red;
   
   return (
     <motion.div
@@ -340,7 +326,7 @@ function ProjectCard({ ds, index, onClick }) {
         )}
       </div>
 
-      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: T.text }}>
         {ds.file_name}
       </h3>
       
@@ -356,11 +342,11 @@ function ProjectCard({ ds, index, onClick }) {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div style={{ background: '#ffffff03', padding: '10px 12px', borderRadius: 10, border: '1px solid #ffffff05' }}>
+        <div style={{ background: theme === 'light' ? '#00000005' : '#ffffff03', padding: '10px 12px', borderRadius: 10, border: `1px solid ${T.border}` }}>
           <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rows</div>
           <div style={{ fontFamily: T.fontMono, fontSize: 14, fontWeight: 600, color: T.cyan }}>{ds.number_of_rows?.toLocaleString()}</div>
         </div>
-        <div style={{ background: '#ffffff03', padding: '10px 12px', borderRadius: 10, border: '1px solid #ffffff05' }}>
+        <div style={{ background: theme === 'light' ? '#00000005' : '#ffffff03', padding: '10px 12px', borderRadius: 10, border: `1px solid ${T.border}` }}>
           <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Features</div>
           <div style={{ fontFamily: T.fontMono, fontSize: 14, fontWeight: 600, color: T.purple }}>{ds.number_of_columns}</div>
         </div>
@@ -369,8 +355,7 @@ function ProjectCard({ ds, index, onClick }) {
   );
 }
 
-
-function ModelCard({ model, index }) {
+function ModelCard({ model, index, T }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -381,11 +366,11 @@ function ModelCard({ model, index }) {
         padding: 24, borderLeft: `4px solid ${T.cyan}`
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', mb: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h4 style={{ color: T.cyan, fontSize: 12, fontWeight: 800, textTransform: 'uppercase' }}>{model.task_type}</h4>
         <div style={{ color: T.textMuted, fontSize: 10 }}>{new Date(model.created_at).toLocaleDateString()}</div>
       </div>
-      <h3 style={{ fontSize: 20, fontWeight: 700, margin: '8px 0' }}>{model.model_name}</h3>
+      <h3 style={{ fontSize: 20, fontWeight: 700, margin: '8px 0', color: T.text }}>{model.model_name}</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
         <div style={{ background: T.cyanDim, padding: '4px 10px', borderRadius: 8, color: T.cyan, fontSize: 14, fontWeight: 700 }}>
           {model.accuracy} Acc
@@ -396,10 +381,8 @@ function ModelCard({ model, index }) {
   );
 }
 
-
 function SettingsView() {
-  const [theme, setTheme] = useState("dark");
-  const [accent, setAccent] = useState(T.cyan);
+  const { theme, setTheme, accent, setAccent, contrast, setContrast, T } = useTheme();
   
   return (
     <motion.div 
@@ -407,15 +390,15 @@ function SettingsView() {
       style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 40 }}
     >
       <section>
-        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Appearance</h3>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: T.text }}>Appearance</h3>
         <div style={{ display: 'flex', gap: 16 }}>
-          <ThemeOption label="Dark Mode" active={theme === "dark"} onClick={() => setTheme("dark")} />
-          <ThemeOption label="Light Mode" active={theme === "light"} onClick={() => setTheme("light")} />
+          <ThemeOption label="Dark Mode" active={theme === "dark"} onClick={() => setTheme("dark")} T={T} />
+          <ThemeOption label="Light Mode" active={theme === "light"} onClick={() => setTheme("light")} T={T} />
         </div>
       </section>
 
       <section>
-        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Accent Color</h3>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: T.text }}>Accent Color</h3>
         <div style={{ display: 'flex', gap: 12 }}>
           {["#00e5ff", "#9b6dff", "#f59e0b", "#10b981", "#ef4444"].map(c => (
             <div 
@@ -423,7 +406,7 @@ function SettingsView() {
               onClick={() => setAccent(c)}
               style={{
                 width: 32, height: 32, borderRadius: '50%', background: c,
-                cursor: 'pointer', border: accent === c ? `3px solid white` : 'none',
+                cursor: 'pointer', border: accent === c ? `3px solid ${T.text}` : 'none',
                 boxShadow: accent === c ? `0 0 15px ${c}` : 'none',
                 transition: '0.2s'
               }}
@@ -433,26 +416,40 @@ function SettingsView() {
       </section>
 
       <section>
-        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Contrast</h3>
-        <input type="range" style={{ width: '100%', accentColor: accent }} />
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, color: T.text }}>Contrast</h3>
+        <input 
+          type="range" 
+          min="0.5" 
+          max="2" 
+          step="0.1" 
+          value={contrast} 
+          onChange={(e) => setContrast(parseFloat(e.target.value))}
+          style={{ width: '100%', accentColor: accent }} 
+        />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 12, color: T.textMuted }}>
           <span>Standard</span>
           <span>High Contrast</span>
         </div>
       </section>
 
-      <button style={{
-        background: accent, color: '#000', border: 'none', padding: '12px 32px',
-        borderRadius: 12, fontWeight: 700, marginTop: 20, cursor: 'pointer',
-        boxShadow: `0 0 20px ${accent}40`
-      }}>
+      <button 
+        onClick={() => {
+          // Persistence is handled by useEffect in ThemeContext
+          alert("Preferences saved successfully!");
+        }}
+        style={{
+          background: accent, color: theme === 'dark' ? '#000' : '#fff', border: 'none', padding: '12px 32px',
+          borderRadius: 12, fontWeight: 700, marginTop: 20, cursor: 'pointer',
+          boxShadow: `0 0 20px ${accent}40`
+        }}
+      >
         Save Preferences
       </button>
     </motion.div>
   );
 }
 
-function ThemeOption({ label, active, onClick }) {
+function ThemeOption({ label, active, onClick, T }) {
   return (
     <div 
       onClick={onClick}
