@@ -7,6 +7,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  optimizeDeps: {
+    include: ['recharts'],
+  },
   build: {
     chunkSizeWarningLimit: 1000,
   }
